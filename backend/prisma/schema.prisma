@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TriggerType {
+  WEBHOOK
+  SCHEDULE
+  EVENT
+}
+
+enum ActionType {
+  HTTP_REQUEST
+  EMAIL
+  DELAY
+  CONDITION
+}
+
+enum ExecutionStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  password  String
+  name      String?
+  workflows Workflow[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Workflow {
+  id          String      @id @default(cuid())
+  name        String
+  description String?
+  isActive    Boolean     @default(true)
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  trigger     Trigger?
+  actions     Action[]
+  executions  Execution[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Trigger {
+  id         String      @id @default(cuid())
+  type       TriggerType
+  config     Json
+  workflowId String      @unique
+  workflow   Workflow    @relation(fields: [workflowId], references: [id])
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+model Action {
+  id         String     @id @default(cuid())
+  name       String
+  type       ActionType
+  config     Json
+  order      Int
+  workflowId String
+  workflow   Workflow   @relation(fields: [workflowId], references: [id])
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+model Execution {
+  id         String          @id @default(cuid())
+  status     ExecutionStatus @default(PENDING)
+  payload    Json?
+  workflowId String
+  workflow   Workflow        @relation(fields: [workflowId], references: [id])
+  logs       ExecutionLog[]
+  startedAt  DateTime        @default(now())
+  finishedAt DateTime?
+}
+
+model ExecutionLog {
+  id          String    @id @default(cuid())
+  level       String    @default("INFO")
+  message     String
+  meta        Json?
+  executionId String
+  execution   Execution @relation(fields: [executionId], references: [id])
+  createdAt   DateTime  @default(now())
+}
