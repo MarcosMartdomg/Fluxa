@@ -1,4 +1,5 @@
 import { Plus, GitMerge, MoreVertical } from 'lucide-react';
+import './WorkflowsPage.css';
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 

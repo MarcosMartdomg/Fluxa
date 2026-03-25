@@ -8,19 +8,7 @@ const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center">
-              <svg 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                className="w-5 h-5 text-white" 
-                stroke="currentColor" 
-                strokeWidth="3"
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              >
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-              </svg>
-            </div>
+            <img src="/images/image-169.png" alt="Fluxa Logo" className="h-8 w-auto" />
             <span className="text-xl font-bold text-gray-900">Fluxa</span>
           </div>
 

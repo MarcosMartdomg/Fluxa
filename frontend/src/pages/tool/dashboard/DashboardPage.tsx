@@ -1,3 +1,4 @@
+import './DashboardPage.css';
 import { Zap, Play, CheckCircle, Clock } from 'lucide-react';
 
 const DashboardPage = () => {

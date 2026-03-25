@@ -1,3 +1,4 @@
+import './SettingsPage.css';
 import { User, Shield, Bell, Key } from 'lucide-react';
 
 const SettingsPage = () => {

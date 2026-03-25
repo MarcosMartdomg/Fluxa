@@ -1,3 +1,4 @@
+import './ExecutionsPage.css';
 import { Play, CheckCircle, XCircle, Clock } from 'lucide-react';
 
 const ExecutionsPage = () => {

@@ -8,13 +8,13 @@ import LoginPage from '../pages/auth/LoginPage';
 import RegisterPage from '../pages/auth/RegisterPage';
 
 // Main Pages
-import DashboardPage from '../pages/dashboard/DashboardPage';
-import WorkflowsPage from '../pages/workflows/WorkflowsPage';
-import CreateWorkflowPage from '../pages/workflows/CreateWorkflowPage';
-import WorkflowDetailPage from '../pages/workflows/WorkflowDetailPage';
-import ExecutionsPage from '../pages/executions/ExecutionsPage';
-import LogsPage from '../pages/logs/LogsPage';
-import SettingsPage from '../pages/settings/SettingsPage';
+import DashboardPage from '../pages/tool/dashboard/DashboardPage';
+import WorkflowsPage from '../pages/tool/workflows/WorkflowsPage';
+import CreateWorkflowPage from '../pages/tool/workflows/CreateWorkflowPage';
+import WorkflowDetailPage from '../pages/tool/workflows/WorkflowDetailPage';
+import ExecutionsPage from '../pages/tool/executions/ExecutionsPage';
+import LogsPage from '../pages/tool/logs/LogsPage';
+import SettingsPage from '../pages/tool/settings/SettingsPage';
 
 import LandingPage from '../pages/landing/LandingPage';
 

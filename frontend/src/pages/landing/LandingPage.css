@@ -1,0 +1,41 @@
+@apply bg-white min-h-screen font-sans;
+
+.landing-container {
+    @apply min-h-screen bg-white;
+}
+
+.section-padding {
+    @apply py-20 lg:py-24;
+}
+
+.hero-title {
+    @apply text-5xl lg:text-7xl font-extrabold text-gray-900 leading-tight mb-6;
+}
+
+.hero-description {
+    @apply text-lg text-gray-500 max-w-lg mb-10 leading-relaxed;
+}
+
+.brand-badge {
+    @apply text-brand-600 font-bold text-xs tracking-widest uppercase mb-4 block;
+}
+
+.cta-button-primary {
+    @apply px-8 py-3 rounded-md bg-brand-600 text-white font-bold hover:bg-brand-700 transition-colors shadow-lg shadow-brand-500/20;
+}
+
+.cta-button-secondary {
+    @apply px-8 py-3 rounded-md border-2 border-gray-200 text-gray-900 font-bold hover:bg-gray-50 transition-colors;
+}
+
+.feature-title {
+    @apply text-lg font-bold text-brand-500 mb-2;
+}
+
+.section-heading-sm {
+    @apply text-2xl font-bold text-gray-900 mb-6;
+}
+
+.section-heading-lg {
+    @apply text-4xl font-extrabold text-gray-900 leading-tight;
+}
