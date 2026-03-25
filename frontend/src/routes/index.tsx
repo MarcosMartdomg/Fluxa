@@ -16,7 +16,13 @@ import ExecutionsPage from '../pages/executions/ExecutionsPage';
 import LogsPage from '../pages/logs/LogsPage';
 import SettingsPage from '../pages/settings/SettingsPage';
 
+import LandingPage from '../pages/landing/LandingPage';
+
 export const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <LandingPage />,
+  },
   {
     path: PATHS.LOGIN,
     element: <LoginPage />,
@@ -31,10 +37,6 @@ export const router = createBrowserRouter([
       {
         element: <AppLayout />,
         children: [
-          {
-            path: '/',
-            element: <Navigate to={PATHS.DASHBOARD} replace />,
-          },
           {
             path: PATHS.DASHBOARD,
             element: <DashboardPage />,

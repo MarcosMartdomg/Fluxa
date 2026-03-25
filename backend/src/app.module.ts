@@ -18,6 +18,7 @@ import { validate } from './config/env.validation';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: '.env',
       validate,
     }),
     BullModule.forRoot({
