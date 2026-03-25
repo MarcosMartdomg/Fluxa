@@ -98,23 +98,47 @@
 /* --- Monitor Section --- */
 
 .section-monitor {
-    @apply py-24 bg-white;
+    @apply py-32 bg-white overflow-hidden;
+}
+
+.grid-monitor {
+    @apply grid lg:grid-cols-2 gap-20 items-center;
+}
+
+.monitor-content {
+    @apply order-1; /* Text on the left */
+}
+
+.monitor-image-container {
+    @apply order-2 relative flex justify-end; /* Image on the right */
+}
+
+.monitor-badge {
+    @apply text-[18px] font-bold text-[#6366F1] uppercase tracking-wider mb-6 block;
 }
 
 .section-heading-lg {
-    @apply text-4xl font-extrabold text-gray-900 leading-tight;
+    @apply text-[50px] font-medium text-[#000000] leading-[1.2] tracking-tight mb-6;
+}
+
+.monitor-description {
+    @apply text-[15px] font-medium text-[#6F6F6F] leading-relaxed max-w-xl mb-12;
 }
 
 .monitor-stats-grid {
-    @apply grid md:grid-cols-2 gap-12;
+    @apply grid md:grid-cols-2 gap-8;
 }
 
 .stat-value {
-    @apply text-4xl font-extrabold text-brand-500;
+    @apply text-[35px] font-medium text-[#6366F1];
 }
 
 .stat-label {
-    @apply text-lg font-bold text-gray-900;
+    @apply text-[20px] font-medium text-[#000000];
+}
+
+.monitor-image {
+    @apply w-full h-auto max-w-[650px] object-contain;
 }
 
 /* --- Architecture Section --- */

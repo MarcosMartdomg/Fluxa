@@ -104,36 +104,44 @@ const Features: React.FC = () => (
 const MonitorSection: React.FC = () => (
   <section className="section-monitor">
     <div className="container-xl">
-      <div className="max-w-3xl">
-        <span className="brand-badge">
-          MONITORIZACIÓN Y ESTADOS EN TIEMPO REAL
-        </span>
-        <h2 className="section-heading-lg mb-6">
-          Monitoriza cada <br />
-          ejecución al detalle.
-        </h2>
-        <p className="text-lg text-gray-500 mb-12 leading-relaxed max-w-2xl">
-          Supervisa el estado de tus flujos en tiempo real con un historial completo de logs y métricas de rendimiento.
-        </p>
+      <div className="grid-monitor">
+        <div className="monitor-content">
+          <span className="monitor-badge">
+            MONITORIZACIÓN Y ESTADOS EN TIEMPO REAL
+          </span>
+          <h2 className="section-heading-lg">
+            Monitoriza cada <br />
+            ejecución al detalle.
+          </h2>
+          <p className="monitor-description">
+            Supervisa el estado de tus flujos en tiempo real con un historial completo de logs y métricas de rendimiento.
+          </p>
 
-        <div className="monitor-stats-grid">
-          <div>
-            <div className="flex items-baseline gap-2 mb-2">
-              <span className="stat-value">100%</span>
-              <span className="stat-label">Trazabilidad.</span>
+          <div className="monitor-stats-grid">
+            <div className="flex flex-col">
+              <div className="flex items-baseline gap-2 mb-2">
+                <span className="stat-value">100%</span>
+                <span className="stat-label">Trazabilidad.</span>
+              </div>
+              <p className="text-[14px] text-[#6F6F6F] leading-relaxed">
+                Cada evento es registrado y auditado para un control total.
+              </p>
             </div>
-            <p className="text-sm text-gray-500 leading-relaxed">
-              Cada evento es registrado y auditado para un control total.
-            </p>
+            <div className="flex flex-col">
+              <div className="flex items-baseline gap-2 mb-2">
+                <span className="stat-value">0ms</span>
+                <span className="stat-label">de Bloqueo.</span>
+              </div>
+              <p className="text-[14px] text-[#6F6F6F] leading-relaxed">
+                Procesamiento asíncrono mediante BullMQ para una respuesta inmediata del sistema.
+              </p>
+            </div>
           </div>
-          <div>
-            <div className="flex items-baseline gap-2 mb-2">
-              <span className="stat-value">0ms</span>
-              <span className="stat-label">de Bloqueo.</span>
-            </div>
-            <p className="text-sm text-gray-500 leading-relaxed">
-              Procesamiento asíncrono mediante BullMQ para una respuesta inmediata del sistema.
-            </p>
+        </div>
+
+        <div className="monitor-image-container">
+          <div className="monitor-image bg-gray-100 rounded-2xl flex items-center justify-center min-h-[400px]">
+            <span className="text-gray-400 font-medium">Espacio para imagen final</span>
           </div>
         </div>
       </div>
