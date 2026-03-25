@@ -1,0 +1,22 @@
+.nav-link {
+  @apply relative text-sm font-medium transition-colors duration-200;
+  color: #666666;
+}
+
+.nav-link:hover, .nav-link.active {
+  color: #6366F1;
+}
+
+.nav-link::after {
+  content: '';
+  @apply absolute left-0 bottom-[-4px] w-0 h-[2px] transition-all duration-300;
+  background-color: #6366F1;
+}
+
+.nav-link:hover::after, .nav-link.active::after {
+  @apply w-full;
+}
+
+.login-btn {
+  @apply px-8 py-2.5 rounded-full bg-[#6366F1] text-white text-sm font-semibold hover:bg-[#5254e0] transition-all;
+}
