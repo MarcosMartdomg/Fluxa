@@ -5,9 +5,9 @@ import './LandingPage.css';
 // --- Internal Components for Landing Sections ---
 
 const Hero: React.FC = () => (
-  <section className="pt-32 pb-20 overflow-hidden">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="lg:grid lg:grid-cols-2 lg:gap-8 items-center">
+  <section className="section-hero">
+    <div className="container-xl">
+      <div className="grid-hero">
         <div className="mb-12 lg:mb-0">
           <span className="brand-badge">
             PLATAFORMA DE AUTOMATIZACIÓN INTELIGENTE
@@ -30,7 +30,7 @@ const Hero: React.FC = () => (
           </div>
         </div>
         <div className="relative">
-          <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-gray-100">
+          <div className="mockup-container">
             <img 
               src="/images/hero-mockup.png" 
               alt="Fluxa Dashboard Mockup" 
@@ -89,16 +89,16 @@ const features = [
 ];
 
 const Features: React.FC = () => (
-  <section className="py-20 bg-gray-50/50">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <section className="section-features">
+    <div className="container-xl">
       <div className="mb-16">
         <h2 className="section-heading-sm">
           Conecta y <span className="text-brand-600">Automatiza</span> tu Ecosistema
         </h2>
       </div>
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
+      <div className="grid-features">
         {features.map((feature, index) => (
-          <div key={index} className="flex flex-col gap-4">
+          <div key={index} className="feature-item">
             <div className="mb-2">{feature.icon}</div>
             <h3 className="feature-title">{feature.title}</h3>
             <p className="text-sm text-gray-500 leading-relaxed">
@@ -112,8 +112,8 @@ const Features: React.FC = () => (
 );
 
 const MonitorSection: React.FC = () => (
-  <section className="py-24 bg-white">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <section className="section-monitor">
+    <div className="container-xl">
       <div className="max-w-3xl">
         <span className="brand-badge">
           MONITORIZACIÓN Y ESTADOS EN TIEMPO REAL
@@ -126,11 +126,11 @@ const MonitorSection: React.FC = () => (
           Supervisa el estado de tus flujos en tiempo real con un historial completo de logs y métricas de rendimiento.
         </p>
 
-        <div className="grid md:grid-cols-2 gap-12">
+        <div className="monitor-stats-grid">
           <div>
             <div className="flex items-baseline gap-2 mb-2">
-              <span className="text-4xl font-extrabold text-brand-500">100%</span>
-              <span className="text-lg font-bold text-gray-900">Trazabilidad.</span>
+              <span className="stat-value">100%</span>
+              <span className="stat-label">Trazabilidad.</span>
             </div>
             <p className="text-sm text-gray-500 leading-relaxed">
               Cada evento es registrado y auditado para un control total.
@@ -138,8 +138,8 @@ const MonitorSection: React.FC = () => (
           </div>
           <div>
             <div className="flex items-baseline gap-2 mb-2">
-              <span className="text-4xl font-extrabold text-brand-500">0ms</span>
-              <span className="text-lg font-bold text-gray-900">de Bloqueo.</span>
+              <span className="stat-value">0ms</span>
+              <span className="stat-label">de Bloqueo.</span>
             </div>
             <p className="text-sm text-gray-500 leading-relaxed">
               Procesamiento asíncrono mediante BullMQ para una respuesta inmediata del sistema.
@@ -196,10 +196,10 @@ const cards = [
 ];
 
 const Architecture: React.FC = () => (
-  <section className="py-24 bg-gray-50/50">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <section className="section-architecture">
+    <div className="container-xl">
       <div className="lg:flex lg:justify-between lg:items-end mb-16 gap-12">
-        <h2 className="text-4xl font-extrabold text-gray-900 leading-tight lg:w-1/2">
+        <h2 className="section-heading-lg lg:w-1/2">
           Arquitectura diseñada para <br />
           automatización a gran escala
         </h2>
@@ -208,20 +208,20 @@ const Architecture: React.FC = () => (
         </p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-8">
+      <div className="grid-architecture">
         {cards.map((card, index) => (
-          <div key={index} className="bg-white p-10 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col items-start gap-6">
-            <div className="w-16 h-16 rounded-xl bg-brand-50 flex items-center justify-center">
+          <div key={index} className="card-architecture">
+            <div className="card-icon-wrapper">
               {card.icon}
             </div>
-            <h3 className="text-xl font-extrabold text-gray-900">{card.title}</h3>
+            <h3 className="card-title">{card.title}</h3>
             <p className="text-sm text-gray-500 leading-relaxed">
               {card.description}
             </p>
             <ul className="space-y-4">
               {card.points.map((point, idx) => (
-                <li key={idx} className="flex gap-3 text-sm text-gray-600 leading-snug">
-                  <span className="text-brand-500 font-bold block mt-1">▶</span>
+                <li key={idx} className="card-point">
+                  <span className="card-point-icon">▶</span>
                   <span>{point}</span>
                 </li>
               ))}
@@ -237,7 +237,7 @@ const Architecture: React.FC = () => (
 
 const LandingPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="landing-container">
       <Navbar />
       <main>
         <Hero />

@@ -4,8 +4,22 @@
     @apply min-h-screen bg-white;
 }
 
-.section-padding {
-    @apply py-20 lg:py-24;
+.container-xl {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+/* --- Hero Section --- */
+
+.section-hero {
+    @apply pt-32 pb-20 overflow-hidden;
+}
+
+.grid-hero {
+    @apply lg:grid lg:grid-cols-2 lg:gap-8 items-center;
+}
+
+.brand-badge {
+    @apply text-brand-600 font-bold text-xs tracking-widest uppercase mb-4 block;
 }
 
 .hero-title {
@@ -16,10 +30,6 @@
     @apply text-lg text-gray-500 max-w-lg mb-10 leading-relaxed;
 }
 
-.brand-badge {
-    @apply text-brand-600 font-bold text-xs tracking-widest uppercase mb-4 block;
-}
-
 .cta-button-primary {
     @apply px-8 py-3 rounded-md bg-brand-600 text-white font-bold hover:bg-brand-700 transition-colors shadow-lg shadow-brand-500/20;
 }
@@ -28,14 +38,80 @@
     @apply px-8 py-3 rounded-md border-2 border-gray-200 text-gray-900 font-bold hover:bg-gray-50 transition-colors;
 }
 
+.mockup-container {
+    @apply relative rounded-2xl overflow-hidden shadow-2xl border border-gray-100;
+}
+
+/* --- Features Section --- */
+
+.section-features {
+    @apply py-20 bg-gray-50/50;
+}
+
+.grid-features {
+    @apply grid md:grid-cols-2 lg:grid-cols-4 gap-12;
+}
+
+.feature-item {
+    @apply flex flex-col gap-4;
+}
+
 .feature-title {
-    @apply text-lg font-bold text-brand-500 mb-2;
+    @apply text-lg font-bold text-brand-500;
 }
 
 .section-heading-sm {
-    @apply text-2xl font-bold text-gray-900 mb-6;
+    @apply text-2xl font-bold text-gray-900;
+}
+
+/* --- Monitor Section --- */
+
+.section-monitor {
+    @apply py-24 bg-white;
 }
 
 .section-heading-lg {
     @apply text-4xl font-extrabold text-gray-900 leading-tight;
+}
+
+.monitor-stats-grid {
+    @apply grid md:grid-cols-2 gap-12;
+}
+
+.stat-value {
+    @apply text-4xl font-extrabold text-brand-500;
+}
+
+.stat-label {
+    @apply text-lg font-bold text-gray-900;
+}
+
+/* --- Architecture Section --- */
+
+.section-architecture {
+    @apply py-24 bg-gray-50/50;
+}
+
+.grid-architecture {
+    @apply grid md:grid-cols-3 gap-8;
+}
+
+.card-architecture {
+    @apply bg-white p-10 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col items-start gap-6;
+}
+
+.card-icon-wrapper {
+    @apply w-16 h-16 rounded-xl bg-brand-50 flex items-center justify-center;
+}
+
+.card-title {
+    @apply text-xl font-extrabold text-gray-900;
+}
+
+.card-point {
+    @apply flex gap-3 text-sm text-gray-600 leading-snug;
+}
+
+.card-point-icon {
+    @apply text-brand-500 font-bold block mt-1;
 }
