@@ -9,7 +9,7 @@ export class QueueService {
     @InjectQueue(QUEUES.WORKFLOW_EXECUTION) private workflowQueue: Queue,
   ) {}
 
-  async addWorkflowToQueue(workflowId: string, payload: any) {
-    await this.workflowQueue.add('execute', { workflowId, payload });
+  async addWorkflowToQueue(workflowId: string, payload: any, executionId: string) {
+    await this.workflowQueue.add('execute', { workflowId, payload, executionId });
   }
 }

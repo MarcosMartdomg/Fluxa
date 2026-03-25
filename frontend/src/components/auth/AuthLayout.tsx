@@ -12,7 +12,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitle }) =>
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <Link to="/" className="flex justify-center mb-6">
-          <img src="/images/image-169.png" alt="Fluxa Logo" className="h-12 w-auto" />
+          <img src="/images/logo.png" alt="Fluxa Logo" className="h-[22px] w-auto" />
         </Link>
         <h2 className="text-center text-3xl font-extrabold text-gray-900">
           {title}

@@ -18,10 +18,7 @@ export class ExecutionsService {
       },
     });
 
-    await this.queueService.addWorkflowToQueue(workflowId, {
-      executionId: execution.id,
-      payload,
-    });
+    await this.queueService.addWorkflowToQueue(workflowId, payload, execution.id);
 
     return execution;
   }

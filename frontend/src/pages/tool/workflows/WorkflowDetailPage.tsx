@@ -1,7 +1,7 @@
 import './WorkflowDetailPage.css';
 import { ArrowLeft, Play, Settings as SettingsIcon, Trash2 } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
-import { PATHS } from '../../routes/paths';
+import { PATHS } from '../../../routes/paths';
 
 const WorkflowDetailPage = () => {
   const { id } = useParams();

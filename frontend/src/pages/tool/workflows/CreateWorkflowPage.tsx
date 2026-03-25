@@ -1,7 +1,7 @@
 import { Save, ArrowLeft } from 'lucide-react';
 import './CreateWorkflowPage.css';
 import { Link } from 'react-router-dom';
-import { PATHS } from '../../routes/paths';
+import { PATHS } from '../../../routes/paths';
 
 const CreateWorkflowPage = () => {
   return (

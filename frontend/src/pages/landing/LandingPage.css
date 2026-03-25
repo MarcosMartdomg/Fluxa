@@ -1,11 +1,10 @@
-@apply bg-white min-h-screen font-sans;
 
 .landing-container {
     @apply min-h-screen bg-white;
 }
 
 .container-xl {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    @apply max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8;
 }
 
 /* --- Hero Section --- */
@@ -19,23 +18,23 @@
 }
 
 .brand-badge {
-    @apply text-brand-600 font-bold text-xs tracking-widest uppercase mb-4 block;
+    @apply text-[#6366F1] font-bold text-[18px] tracking-[0.05em] uppercase mb-6 block;
 }
 
 .hero-title {
-    @apply text-5xl lg:text-7xl font-extrabold text-gray-900 leading-tight mb-6;
+    @apply text-[55px] font-medium text-gray-900 leading-[1.15] mb-8;
 }
 
 .hero-description {
-    @apply text-lg text-gray-500 max-w-lg mb-10 leading-relaxed;
+    @apply text-[15px] font-medium text-[#6F6F6F] max-w-xl mb-12 leading-relaxed;
 }
 
 .cta-button-primary {
-    @apply px-8 py-3 rounded-md bg-brand-600 text-white font-bold hover:bg-brand-700 transition-colors shadow-lg shadow-brand-500/20;
+    @apply px-10 py-3.5 rounded-lg bg-[#6366F1] text-white font-bold transition-all duration-300 shadow-lg shadow-[#6366F1]/20 hover:bg-[#5254e0] hover:-translate-y-1 hover:shadow-[#6366F1]/40 active:scale-[0.98] active:translate-y-0;
 }
 
 .cta-button-secondary {
-    @apply px-8 py-3 rounded-md border-2 border-gray-200 text-gray-900 font-bold hover:bg-gray-50 transition-colors;
+    @apply px-10 py-3.5 rounded-lg border border-gray-300 text-black font-bold transition-all duration-300 hover:bg-gray-50 hover:border-gray-400 hover:-translate-y-1 active:scale-[0.98] active:translate-y-0;
 }
 
 .mockup-container {
