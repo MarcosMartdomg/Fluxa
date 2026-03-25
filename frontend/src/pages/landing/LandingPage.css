@@ -10,7 +10,11 @@
 /* --- Hero Section --- */
 
 .section-hero {
-    @apply pt-32 pb-20 overflow-hidden;
+    @apply pt-32 pb-0 overflow-hidden min-h-[654px] flex items-center;
+}
+
+.hero-text-column {
+    @apply -translate-y-12 lg:-translate-y-20;
 }
 
 .grid-hero {
@@ -26,7 +30,7 @@
 }
 
 .hero-description {
-    @apply text-[15px] font-medium text-[#6F6F6F] max-w-xl mb-12 leading-relaxed;
+    @apply text-[15px] font-medium text-[#6F6F6F] mb-12 leading-relaxed;
 }
 
 .cta-button-primary {
@@ -37,14 +41,26 @@
     @apply px-10 py-3.5 rounded-lg border border-gray-300 text-black font-bold transition-all duration-300 hover:bg-gray-50 hover:border-gray-400 hover:-translate-y-1 active:scale-[0.98] active:translate-y-0;
 }
 
-.mockup-container {
-    @apply relative rounded-2xl overflow-hidden shadow-2xl border border-gray-100;
+.hero-image-container {
+    @apply relative w-full flex justify-end overflow-visible;
+}
+
+.hero-image-container img {
+    @apply w-full h-auto max-w-[550px] object-contain;
+}
+
+.text-gradient {
+    background: linear-gradient(90deg, #6366F1 0%, #4F46E5 32%, #22D3EE 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: inline-block;
 }
 
 /* --- Features Section --- */
 
 .section-features {
-    @apply py-20 bg-gray-50/50;
+    @apply pb-24 pt-12 bg-[#F7F6F2];
 }
 
 .grid-features {
@@ -55,12 +71,28 @@
     @apply flex flex-col gap-4;
 }
 
+.feature-header {
+    @apply flex items-center gap-4 mb-2;
+}
+
+.feature-icon-container {
+    @apply w-12 h-12 flex items-center justify-center flex-shrink-0;
+}
+
+.feature-icon-container img {
+    @apply w-auto h-full;
+}
+
 .feature-title {
-    @apply text-lg font-bold text-brand-500;
+    @apply text-[18px] font-bold text-[#6366F1] leading-tight mb-2;
+}
+
+.feature-description {
+    @apply text-[14px] font-medium text-[#6F6F6F] leading-relaxed;
 }
 
 .section-heading-sm {
-    @apply text-2xl font-bold text-gray-900;
+    @apply text-[32px] font-bold text-gray-900 mb-16;
 }
 
 /* --- Monitor Section --- */

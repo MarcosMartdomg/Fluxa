@@ -8,7 +8,7 @@ const Hero: React.FC = () => (
   <section className="section-hero">
     <div className="container-xl">
       <div className="grid-hero">
-        <div className="mb-12 lg:mb-0">
+        <div className="hero-text-column mb-12 lg:mb-0">
           <span className="brand-badge">
             PLATAFORMA DE AUTOMATIZACIÓN INTELIGENTE
           </span>
@@ -30,10 +30,10 @@ const Hero: React.FC = () => (
           </div>
         </div>
         <div className="relative">
-          <div className="mockup-container">
+          <div className="hero-image-container">
             <img 
-              src="/images/hero-mockup.png" 
-              alt="Fluxa Dashboard Mockup" 
+              src="/images/imagen_Landing.png" 
+              alt="Fluxa Platform Visualization" 
               className="w-full h-auto"
             />
           </div>
@@ -42,70 +42,60 @@ const Hero: React.FC = () => (
     </div>
   </section>
 );
-
-const features = [
-  {
-    title: "Punto de entrada: Webhooks",
-    description: "Configura una URL única para recibir eventos en tiempo real desde cualquier servicio externo mediante peticiones HTTP.",
-    icon: (
-      <svg className="w-10 h-10 text-brand-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M7 11l5-5-5-5M17 13l-5 5 5 5" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M2 11h11M10 13h12" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
-  },
-  {
-    title: "Automatización Programada",
-    description: "Define ejecuciones automáticas basadas en intervalos de tiempo (diarios, horarios) para realizar tareas recurrentes sin intervención manual.",
-    icon: (
-      <svg className="w-10 h-10 text-brand-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="12" cy="12" r="10" />
-        <path d="M12 6v6l4 2" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
-  },
-  {
-    title: "Integración con APIs Externas",
-    description: "Realiza llamadas automáticas a servicios de terceros para enviar información procesada o sincronizar datos entre plataformas.",
-    icon: (
-      <svg className="w-10 h-10 text-brand-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M17.5 19L22 14.5L17.5 10" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M6.5 5L2 9.5L6.5 14" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M13 19L14.5 5" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
-  },
-  {
-    title: "Persistencia en Base de Datos",
-    description: "Almacena el resultado de tus flujos de trabajo directamente en la base de datos de Fluxa de forma estructurada para su posterior análisis.",
-    icon: (
-      <svg className="w-10 h-10 text-brand-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M12 21c-4.418 0-8-1.567-8-3.5S7.582 14 12 14s8 1.567 8 3.5-3.582 3.5-8 3.5z" />
-        <path d="M4 17.5V14c0-1.933 3.582-3.5 8-3.5s8 1.567 8 3.5v3.5" />
-        <path d="M4 10.5V7c0-1.933 3.582-3.5 8-3.5s8 1.567 8 3.5v3.5" />
-      </svg>
-    ),
-  },
-];
-
 const Features: React.FC = () => (
   <section className="section-features">
     <div className="container-xl">
-      <div className="mb-16">
-        <h2 className="section-heading-sm">
-          Conecta y <span className="text-brand-600">Automatiza</span> tu Ecosistema
-        </h2>
-      </div>
+      <h2 className="section-heading-sm">
+        Conecta y <span className="text-gradient">Automatiza</span> tu Ecosistema
+      </h2>
       <div className="grid-features">
-        {features.map((feature, index) => (
-          <div key={index} className="feature-item">
-            <div className="mb-2">{feature.icon}</div>
-            <h3 className="feature-title">{feature.title}</h3>
-            <p className="text-sm text-gray-500 leading-relaxed">
-              {feature.description}
-            </p>
+        <div className="feature-item">
+          <div className="feature-header">
+            <div className="feature-icon-container">
+              <img src="/images/section1_1.png" alt="Webhook Icon" />
+            </div>
+            <h3 className="feature-title">Punto de entrada: <br /> Webhooks</h3>
           </div>
-        ))}
+          <p className="feature-description">
+            Configura una URL única para recibir eventos en tiempo real desde cualquier servicio externo mediante peticiones HTTP.
+          </p>
+        </div>
+
+        <div className="feature-item">
+          <div className="feature-header">
+            <div className="feature-icon-container">
+              <img src="/images/section1_2.png" alt="Schedule Icon" />
+            </div>
+            <h3 className="feature-title">Automatización <br /> Programada</h3>
+          </div>
+          <p className="feature-description">
+            Define ejecuciones automáticas basadas en intervalos de tiempo (diarios, horarios) para realizar tareas recurrentes sin intervención manual.
+          </p>
+        </div>
+
+        <div className="feature-item">
+          <div className="feature-header">
+            <div className="feature-icon-container">
+              <img src="/images/section1_3.png" alt="API Icon" />
+            </div>
+            <h3 className="feature-title">Integración con <br /> APIs Externas</h3>
+          </div>
+          <p className="feature-description">
+            Realiza llamadas automáticas a servicios de terceros para enviar información procesada o sincronizar datos entre plataformas.
+          </p>
+        </div>
+
+        <div className="feature-item">
+          <div className="feature-header">
+            <div className="feature-icon-container">
+              <img src="/images/section1_4.png" alt="Database Icon" />
+            </div>
+            <h3 className="feature-title">Persistencia en <br /> Base de Datos</h3>
+          </div>
+          <p className="feature-description">
+            Almacena el resultado de tus flujos de trabajo directamente en la base de datos de Fluxa de forma estructurada para su posterior análisis.
+          </p>
+        </div>
       </div>
     </div>
   </section>
