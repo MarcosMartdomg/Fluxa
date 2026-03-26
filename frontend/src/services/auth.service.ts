@@ -1,4 +1,5 @@
 import api from './api';
+import { supabase } from './supabase';
 
 const authService = {
   login: async (credentials: any) => {
@@ -15,6 +16,17 @@ const authService = {
       localStorage.setItem('access_token', response.data.access_token);
     }
     return response.data;
+  },
+
+  signInWithGoogle: async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin + '/dashboard',
+      },
+    });
+    if (error) throw error;
+    return data;
   },
 
   logout: () => {

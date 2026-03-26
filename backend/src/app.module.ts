@@ -8,7 +8,6 @@ import { WorkflowsModule } from './workflows/workflows.module';
 import { TriggersModule } from './triggers/triggers.module';
 import { ActionsModule } from './actions/actions.module';
 import { ExecutionsModule } from './executions/executions.module';
-import { LogsModule } from './logs/logs.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
 import { BullMqModule } from './queue/bullmq.module';
@@ -21,23 +20,22 @@ import { validate } from './config/env.validation';
       envFilePath: '.env',
       validate,
     }),
-    BullModule.forRoot({
+/*    BullModule.forRoot({
       connection: {
         host: process.env.REDIS_HOST || 'localhost',
         port: parseInt(process.env.REDIS_PORT, 10) || 6379,
       },
-    }),
+    }),*/
     PrismaModule,
-    BullMqModule,
+    // BullMqModule,
     AuthModule,
     UsersModule,
-    WorkflowsModule,
+    /*WorkflowsModule,
     TriggersModule,
     ActionsModule,
     ExecutionsModule,
-    LogsModule,
     WebhooksModule,
-    SchedulerModule,
+    SchedulerModule,*/
   ],
 })
 export class AppModule {}

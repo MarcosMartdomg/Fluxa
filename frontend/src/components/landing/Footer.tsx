@@ -3,7 +3,7 @@ import React from 'react';
 const Footer: React.FC = () => {
   return (
     <footer className="bg-white pt-20">
-      <div className="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+      <div className="max-w-[1440px] mx-auto px-6 sm:px-8 lg:px-16 xl:px-24 pb-16">
         <div className="grid md:grid-cols-12 gap-12">
           <div className="md:col-span-5">
             <div className="flex items-center gap-2 mb-6">
@@ -49,7 +49,7 @@ const Footer: React.FC = () => {
       </div>
 
       <div className="bg-[#6366F1] py-4">
-        <div className="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center text-[10px] text-white/80 font-medium">
+        <div className="max-w-[1440px] mx-auto px-6 sm:px-8 lg:px-16 xl:px-24 flex justify-between items-center text-[10px] text-white/80 font-medium">
           <span>©2026 Fluxa experience.</span>
           <div className="flex gap-4">
             <a href="#" className="hover:text-white transition-colors">Legal</a>
