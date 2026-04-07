@@ -1,47 +1,24 @@
-import './DashboardPage.css';
-import { Zap, Play, CheckCircle, Clock } from 'lucide-react';
+import { Bot } from 'lucide-react';
 
 const DashboardPage = () => {
-  const stats = [
-    { name: 'Total Workflows', value: '12', icon: Zap, color: 'text-blue-600', bg: 'bg-blue-100' },
-    { name: 'Active Triggers', value: '8', icon: Play, color: 'text-green-600', bg: 'bg-green-100' },
-    { name: 'Succeeded (24h)', value: '1,284', icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-100' },
-    { name: 'Avg. Execution', value: '1.2s', icon: Clock, color: 'text-amber-600', bg: 'bg-amber-100' },
-  ];
-
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
-      </div>
+    <div className="flex flex-col items-center justify-center min-h-[75vh] px-4 py-12 bg-white/50">
+      <h1 className="text-[38px] font-bold text-gray-900 mb-14 text-center tracking-tight">
+        What would you like to automate?
+      </h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <div key={stat.name} className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-              <div className="flex items-center gap-4">
-                <div className={`${stat.bg} p-3 rounded-lg`}>
-                  <Icon className={`w-6 h-6 ${stat.color}`} />
-                </div>
-                <div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">{stat.name}</p>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{stat.value}</p>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <h2 className="text-lg font-semibold mb-4">Recent Executions</h2>
-          <div className="text-sm text-slate-500">List of recent workflow runs...</div>
+      <div className="w-full max-w-[720px] bg-white rounded-xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+        <div className="flex items-center gap-2 px-5 py-4 border-b border-gray-50">
+          <Bot className="w-4 h-4 text-gray-400" />
+          <span className="text-[13px] font-bold text-gray-700">Chatgpt</span>
         </div>
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <h2 className="text-lg font-semibold mb-4">Popular Workflows</h2>
-          <div className="text-sm text-slate-500">Most active automations...</div>
+        
+        <div className="p-6">
+          <textarea
+            rows={5}
+            className="w-full border-none focus:ring-0 text-gray-500 placeholder-gray-300 resize-none text-[15px] font-medium leading-relaxed"
+            placeholder="Describe your automation..."
+          />
         </div>
       </div>
     </div>
@@ -49,3 +26,5 @@ const DashboardPage = () => {
 };
 
 export default DashboardPage;
+
+
