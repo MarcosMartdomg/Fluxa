@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Home, 
   Globe, 
@@ -10,12 +10,16 @@ import {
 import { PATHS } from '../../routes/paths';
 import { clsx } from 'clsx';
 
+
 interface SidebarProps {
   isExpanded: boolean;
 }
 
 const Sidebar = ({ isExpanded }: SidebarProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+
 
   const navItems = [
     { name: 'Home', path: PATHS.DASHBOARD, icon: Home },
@@ -28,15 +32,22 @@ const Sidebar = ({ isExpanded }: SidebarProps) => {
       "bg-white border-r border-gray-100 flex flex-col transition-all duration-300 z-20",
       isExpanded ? "w-60" : "w-16"
     )}>
-      <div className={clsx("flex flex-col items-center py-6 h-full", isExpanded && "items-stretch px-4")}>
+      <div className={clsx("flex flex-col items-center pt-4 pb-6 h-full", isExpanded && "items-stretch px-4")}>
         {/* Purple Plus Button / Create Button */}
-        <button className={clsx(
-          "bg-[#6366F1] text-white rounded-xl flex items-center justify-center shadow-lg shadow-indigo-100 hover:opacity-90 transition-all mb-6 shrink-0",
-          isExpanded ? "h-11 px-4 gap-3 w-full" : "w-10 h-10"
-        )}>
-          <Plus className={clsx(isExpanded ? "w-5 h-5" : "w-6 h-6")} />
+        <button 
+          onClick={() => navigate(PATHS.CREATE_WORKFLOW)}
+          className={clsx(
+            "bg-[#6366F1] text-white rounded-xl flex items-center justify-center shadow-lg shadow-indigo-100 hover:opacity-90 transition-all mb-4 shrink-0",
+            isExpanded ? "h-11 px-4 w-full" : "w-10 h-10"
+          )}
+        >
+
+
+
+          {!isExpanded && <Plus className="w-6 h-6" />}
           {isExpanded && <span className="text-[13px] font-bold">+ Create</span>}
         </button>
+
 
         {/* Navigation Items */}
         <nav className="flex flex-col gap-2 w-full">

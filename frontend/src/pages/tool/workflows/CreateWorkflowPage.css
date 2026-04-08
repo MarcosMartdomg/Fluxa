@@ -1,3 +1,79 @@
-/* CreateWorkflowPage Specific Styles */
+.create-workflow-container {
+  min-height: calc(100vh - 120px);
+  padding: 2rem;
+  background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.05), transparent 40%),
+              radial-gradient(circle at bottom left, rgba(99, 102, 241, 0.05), transparent 40%);
+}
 
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.04);
+}
 
+.premium-input {
+  @apply w-full px-4 py-3 bg-white/50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-[#6366F1]/20 focus:border-[#6366F1] focus:bg-white outline-none transition-all placeholder:text-gray-300 text-[15px] font-medium;
+}
+
+.premium-label {
+  @apply flex items-center gap-2 text-[13px] font-bold text-gray-400 mb-2 uppercase tracking-wider;
+}
+
+.canvas-preview-box {
+  background-image: 
+    radial-gradient(rgba(99, 102, 241, 0.1) 1px, transparent 1px),
+    radial-gradient(rgba(99, 102, 241, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+}
+
+.btn-gradient {
+  background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-gradient:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.4);
+}
+
+.btn-gradient:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.workflow-node-mock {
+  @apply absolute bg-white p-3 rounded-lg border border-gray-200 shadow-sm flex items-center gap-3 transition-all duration-700 ease-in-out;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-in-from-top {
+  from { transform: translateY(-1rem); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-in {
+  animation: fade-in 0.5s ease-out forwards;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+.slide-in-from-top-4 {
+  animation: slide-in-from-top 0.5s ease-out forwards;
+}
+
+.delay-300 {
+  animation-delay: 300ms;
+}

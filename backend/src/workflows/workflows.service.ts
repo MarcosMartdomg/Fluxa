@@ -15,12 +15,16 @@ export class WorkflowsService {
     });
   }
 
-  async findAll(userId: string) {
+  async findAll(userId: string, projectId?: string) {
     return this.prisma.workflow.findMany({
-      where: { userId },
+      where: { 
+        userId,
+        ...(projectId ? { projectId } : {}),
+      },
       include: { trigger: true, _count: { select: { actions: true } } },
     });
   }
+
 
   async findOne(id: string, userId: string) {
     const workflow = await this.prisma.workflow.findUnique({

@@ -1,10 +1,13 @@
 import api from './api';
 
 const workflowsService = {
-  getAll: async () => {
-    const response = await api.get('/workflows');
+  getAll: async (projectId?: string) => {
+    const response = await api.get('/workflows', {
+      params: { ...(projectId ? { projectId } : {}) }
+    });
     return response.data;
   },
+
 
   getById: async (id: string) => {
     const response = await api.get(`/workflows/${id}`);

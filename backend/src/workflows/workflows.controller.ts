@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query } from '@nestjs/common';
+
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { WorkflowsService } from './workflows.service';
@@ -19,9 +20,10 @@ export class WorkflowsController {
 
   @Get()
   @ApiOperation({ summary: 'Get all user workflows' })
-  findAll(@Request() req) {
-    return this.workflowsService.findAll(req.user.userId);
+  findAll(@Request() req, @Query('projectId') projectId?: string) {
+    return this.workflowsService.findAll(req.user.userId, projectId);
   }
+
 
   @Get(':id')
   @ApiOperation({ summary: 'Get workflow by ID' })

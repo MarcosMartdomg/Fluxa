@@ -12,6 +12,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
 import { BullMqModule } from './queue/bullmq.module';
 import { validate } from './config/env.validation';
+import { ProjectsModule } from './projects/projects.module';
 
 @Module({
   imports: [
@@ -30,12 +31,14 @@ import { validate } from './config/env.validation';
     // BullMqModule,
     AuthModule,
     UsersModule,
-    /*WorkflowsModule,
+    WorkflowsModule,
     TriggersModule,
     ActionsModule,
     ExecutionsModule,
     WebhooksModule,
-    SchedulerModule,*/
+    SchedulerModule,
+    ProjectsModule,
   ],
 })
+
 export class AppModule {}

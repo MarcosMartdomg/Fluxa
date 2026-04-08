@@ -23,9 +23,11 @@ class EnvironmentVariables {
   JWT_SECRET: string;
 
   @IsString()
+  @IsOptional()
   REDIS_HOST: string;
 
   @IsNumber()
+  @IsOptional()
   REDIS_PORT: number;
 
   @IsString()

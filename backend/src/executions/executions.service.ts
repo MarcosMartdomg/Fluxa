@@ -6,7 +6,7 @@ import { QueueService } from '../queue/queue.service';
 export class ExecutionsService {
   constructor(
     private prisma: PrismaService,
-    private queueService: QueueService,
+    // private queueService: QueueService,
   ) {}
 
   async trigger(workflowId: string, payload: any) {
@@ -18,7 +18,7 @@ export class ExecutionsService {
       },
     });
 
-    await this.queueService.addWorkflowToQueue(workflowId, payload, execution.id);
+    // await this.queueService.addWorkflowToQueue(workflowId, payload, execution.id);
 
     return execution;
   }
