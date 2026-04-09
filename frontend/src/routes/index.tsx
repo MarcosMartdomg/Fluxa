@@ -12,6 +12,7 @@ import DashboardPage from '../pages/tool/dashboard/DashboardPage';
 import WorkflowsPage from '../pages/tool/workflows/WorkflowsPage';
 import CreateWorkflowPage from '../pages/tool/workflows/CreateWorkflowPage';
 import WorkflowDetailPage from '../pages/tool/workflows/WorkflowDetailPage';
+import ProjectCanvasPage from '../pages/tool/projects/ProjectCanvasPage';
 import ExecutionsPage from '../pages/tool/executions/ExecutionsPage';
 import LogsPage from '../pages/tool/logs/LogsPage';
 import SettingsPage from '../pages/tool/settings/SettingsPage';
@@ -40,6 +41,10 @@ export const router = createBrowserRouter([
           {
             path: PATHS.DASHBOARD,
             element: <DashboardPage />,
+          },
+          {
+            path: PATHS.PROJECT_DETAIL,
+            element: <ProjectCanvasPage />,
           },
           {
             path: PATHS.WORKFLOWS,

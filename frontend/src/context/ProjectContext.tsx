@@ -14,6 +14,7 @@ interface ProjectContextType {
   setActiveProject: (project: Project | null) => void;
   refreshProjects: () => Promise<void>;
   createProject: (name: string, description?: string) => Promise<Project>;
+  deleteProject: (id: string) => Promise<void>;
 }
 
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
@@ -64,6 +65,17 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return newProject;
   };
 
+  const deleteProject = async (id: string) => {
+    await projectsService.delete(id);
+    const nextProjects = projects.filter((project) => project.id !== id);
+    setProjects(nextProjects);
+
+    if (activeProject?.id === id) {
+      const nextActive = nextProjects[0] ?? null;
+      setActiveProject(nextActive);
+    }
+  };
+
   useEffect(() => {
     refreshProjects();
   }, [refreshProjects]);
@@ -75,7 +87,8 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       loading, 
       setActiveProject, 
       refreshProjects, 
-      createProject 
+      createProject,
+      deleteProject,
     }}>
       {children}
     </ProjectContext.Provider>
