@@ -40,6 +40,7 @@ const ProjectCanvasPage = () => {
   const storageKey = useMemo(() => (id ? `fluxa:project-canvas:${id}` : null), [id]);
 
   const [viewport, setViewport] = useState({ x: 0, y: 0 });
+  const [canvasZoom, setCanvasZoom] = useState(1);
   const [cards, setCards] = useState<CanvasCard[]>(defaultCanvasState.cards);
   const [edges, setEdges] = useState<CanvasEdge[]>(defaultCanvasState.edges);
   const [selectedCardId, setSelectedCardId] = useState<string | null>('2');
@@ -123,8 +124,8 @@ const ProjectCanvasPage = () => {
 
       if (draggingCard && containerRef.current) {
         const rect = containerRef.current.getBoundingClientRect();
-        const mouseX = event.clientX - rect.left - viewport.x;
-        const mouseY = event.clientY - rect.top - viewport.y;
+        const mouseX = (event.clientX - rect.left - viewport.x) / canvasZoom;
+        const mouseY = (event.clientY - rect.top - viewport.y) / canvasZoom;
         setCards((previous) =>
           previous.map((card) =>
             card.id === draggingCard.id
@@ -146,7 +147,58 @@ const ProjectCanvasPage = () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [draggingCard, panStart, viewport.x, viewport.y]);
+  }, [canvasZoom, draggingCard, panStart, viewport.x, viewport.y]);
+
+  useEffect(() => {
+    const blockBackMouseButton = (event: MouseEvent) => {
+      if (event.button === 3) {
+        event.preventDefault();
+      }
+    };
+
+    window.addEventListener('mouseup', blockBackMouseButton, true);
+    window.addEventListener('auxclick', blockBackMouseButton, true);
+
+    return () => {
+      window.removeEventListener('mouseup', blockBackMouseButton, true);
+      window.removeEventListener('auxclick', blockBackMouseButton, true);
+    };
+  }, []);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleWheel = (event: WheelEvent) => {
+      if (!event.ctrlKey) return;
+      event.preventDefault();
+      const next = Math.min(2, Math.max(0.5, canvasZoom + (event.deltaY > 0 ? -0.08 : 0.08)));
+      setCanvasZoom(next);
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => container.removeEventListener('wheel', handleWheel as EventListener);
+  }, [canvasZoom]);
+
+  useEffect(() => {
+    const handleZoomKeys = (event: KeyboardEvent) => {
+      if (!event.ctrlKey) return;
+
+      if (event.key === '+' || event.key === '=') {
+        event.preventDefault();
+        setCanvasZoom((previous) => Math.min(2, previous + 0.08));
+      } else if (event.key === '-') {
+        event.preventDefault();
+        setCanvasZoom((previous) => Math.max(0.5, previous - 0.08));
+      } else if (event.key === '0') {
+        event.preventDefault();
+        setCanvasZoom(1);
+      }
+    };
+
+    window.addEventListener('keydown', handleZoomKeys);
+    return () => window.removeEventListener('keydown', handleZoomKeys);
+  }, []);
 
   const createCard = () => {
     const normalizedTitle = newCardTitle.trim();
@@ -227,10 +279,20 @@ const ProjectCanvasPage = () => {
     <div className="h-full bg-[#F6F6F8]">
       <div
         ref={containerRef}
-        className="relative h-full overflow-hidden bg-[#F3F3F5]"
+        className={`relative h-full overflow-hidden bg-[#F3F3F5] ${
+          panStart ? 'cursor-grabbing' : activeTool === 'pan' ? 'cursor-grab' : 'cursor-default'
+        }`}
         onMouseDown={(event) => {
-          if (event.button !== 0) return;
-          if (activeTool !== 'pan') {
+          const isLeftPanClick = event.button === 0 && activeTool === 'pan';
+          const isMiddleClick = event.button === 1;
+          const isBackButtonClick = event.button === 3;
+          if (!isLeftPanClick && !isMiddleClick && !isBackButtonClick) return;
+
+          if (event.button === 1 || event.button === 3) {
+            event.preventDefault();
+          }
+
+          if (event.button === 0 && activeTool !== 'pan') {
             setSelectedCardId(null);
             return;
           }
@@ -241,6 +303,11 @@ const ProjectCanvasPage = () => {
             originY: viewport.y,
           });
         }}
+        onAuxClick={(event) => {
+          if (event.button === 1 || event.button === 3) {
+            event.preventDefault();
+          }
+        }}
       >
         <div
           className="absolute inset-0"
@@ -248,7 +315,7 @@ const ProjectCanvasPage = () => {
             backgroundImage:
               'radial-gradient(circle at 1px 1px, rgba(107,114,128,0.08) 1px, transparent 0)',
             backgroundSize: '28px 28px',
-            transform: `translate(${viewport.x}px, ${viewport.y}px)`,
+            transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${canvasZoom})`,
             transformOrigin: 'top left',
           }}
         >
@@ -434,11 +501,14 @@ const ProjectCanvasPage = () => {
                 setPanelMode('edit');
               }}
               onMouseDown={(event) => {
+                if (activeTool === 'pan' && event.button === 0) {
+                  return;
+                }
                 event.stopPropagation();
                 if (!containerRef.current) return;
                 const rect = containerRef.current.getBoundingClientRect();
-                const localX = event.clientX - rect.left - viewport.x;
-                const localY = event.clientY - rect.top - viewport.y;
+                const localX = (event.clientX - rect.left - viewport.x) / canvasZoom;
+                const localY = (event.clientY - rect.top - viewport.y) / canvasZoom;
                 setDraggingCard({
                   id: card.id,
                   offsetX: localX - card.x,
@@ -487,8 +557,8 @@ const ProjectCanvasPage = () => {
             className="absolute inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#6366F1] bg-white text-[#6366F1] shadow transition hover:bg-indigo-50"
             title="Add connection card"
             style={{
-              left: bottomCard.x + viewport.x + 95 - 16,
-              top: bottomCard.y + viewport.y + 78,
+              left: bottomCard.x * canvasZoom + viewport.x + 95 * canvasZoom - 16,
+              top: bottomCard.y * canvasZoom + viewport.y + 78 * canvasZoom,
             }}
           >
             <Plus className="h-4 w-4" />
@@ -544,6 +614,9 @@ const ProjectCanvasPage = () => {
               <Link2 className="h-3.5 w-3.5" />
               Conectar
             </button>
+            <div className="ml-1 rounded-md bg-gray-100 px-2 py-1 text-[11px] font-semibold text-gray-600">
+              {Math.round(canvasZoom * 100)}%
+            </div>
           </div>
         </div>
       </div>
