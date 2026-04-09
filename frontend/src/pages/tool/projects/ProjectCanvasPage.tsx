@@ -2,6 +2,7 @@ import { Plus, Link2, MoreHorizontal, MessageCircle, X, Trash2, Hand, MousePoint
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useProject } from '../../../context/ProjectContext';
+import projectsService from '../../../services/projects.service';
 
 type CardKind = 'trigger' | 'action' | 'connection';
 
@@ -37,7 +38,7 @@ const ProjectCanvasPage = () => {
   const { id } = useParams();
   const { projects, activeProject, setActiveProject } = useProject();
   const containerRef = useRef<HTMLDivElement>(null);
-  const storageKey = useMemo(() => (id ? `fluxa:project-canvas:${id}` : null), [id]);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [viewport, setViewport] = useState({ x: 0, y: 0 });
   const [canvasZoom, setCanvasZoom] = useState(1);
@@ -53,6 +54,7 @@ const ProjectCanvasPage = () => {
   const [linkTarget, setLinkTarget] = useState('');
   const [panelError, setPanelError] = useState('');
   const [activeTool, setActiveTool] = useState<'pan' | 'select'>('pan');
+  const [isCanvasLoaded, setIsCanvasLoaded] = useState(false);
 
   const [panStart, setPanStart] = useState<{ startX: number; startY: number; originX: number; originY: number } | null>(null);
   const [draggingCard, setDraggingCard] = useState<{ id: string; offsetX: number; offsetY: number } | null>(null);
@@ -66,35 +68,56 @@ const ProjectCanvasPage = () => {
   }, [id, projects, activeProject?.id, setActiveProject]);
 
   useEffect(() => {
-    if (!storageKey) return;
+    if (!id) return;
+    let cancelled = false;
 
-    const raw = localStorage.getItem(storageKey);
-    if (!raw) {
-      setCards(defaultCanvasState.cards);
-      setEdges(defaultCanvasState.edges);
-      setSelectedCardId(defaultCanvasState.cards[1]?.id ?? defaultCanvasState.cards[0]?.id ?? null);
-      return;
-    }
+    const loadCanvas = async () => {
+      try {
+        const data = await projectsService.getCanvas(id);
+        if (cancelled) return;
 
-    try {
-      const parsed = JSON.parse(raw) as CanvasState;
-      const nextCards = Array.isArray(parsed.cards) && parsed.cards.length > 0 ? parsed.cards : defaultCanvasState.cards;
-      const nextEdges = Array.isArray(parsed.edges) ? parsed.edges : [];
-      setCards(nextCards);
-      setEdges(nextEdges);
-      setSelectedCardId(nextCards[0]?.id ?? null);
-    } catch {
-      setCards(defaultCanvasState.cards);
-      setEdges(defaultCanvasState.edges);
-      setSelectedCardId(defaultCanvasState.cards[0]?.id ?? null);
-    }
-  }, [storageKey]);
+        const loadedCards = Array.isArray(data?.cards) ? (data.cards as CanvasCard[]) : [];
+        const loadedEdges = Array.isArray(data?.edges) ? (data.edges as CanvasEdge[]) : [];
+
+        if (loadedCards.length > 0) {
+          setCards(loadedCards);
+          setEdges(loadedEdges);
+          setSelectedCardId(loadedCards[0]?.id ?? null);
+        } else {
+          setCards(defaultCanvasState.cards);
+          setEdges(defaultCanvasState.edges);
+          setSelectedCardId(defaultCanvasState.cards[1]?.id ?? defaultCanvasState.cards[0]?.id ?? null);
+        }
+      } catch {
+        if (cancelled) return;
+        setCards(defaultCanvasState.cards);
+        setEdges(defaultCanvasState.edges);
+        setSelectedCardId(defaultCanvasState.cards[1]?.id ?? defaultCanvasState.cards[0]?.id ?? null);
+      } finally {
+        if (!cancelled) setIsCanvasLoaded(true);
+      }
+    };
+
+    setIsCanvasLoaded(false);
+    loadCanvas();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
   useEffect(() => {
-    if (!storageKey) return;
-    const state: CanvasState = { cards, edges };
-    localStorage.setItem(storageKey, JSON.stringify(state));
-  }, [cards, edges, storageKey]);
+    if (!id || !isCanvasLoaded) return;
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+
+    saveTimeoutRef.current = setTimeout(() => {
+      projectsService.updateCanvas(id, { cards, edges }).catch(() => undefined);
+    }, 450);
+
+    return () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    };
+  }, [id, cards, edges, isCanvasLoaded]);
 
   useEffect(() => {
     if (panelMode !== 'edit') return;

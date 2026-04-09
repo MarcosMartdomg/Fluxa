@@ -3,7 +3,7 @@ import { HelpCircle, ChevronUp, ChevronDown, Menu, Check, Trash2, AlertTriangle 
 import { clsx } from 'clsx';
 import { useProject } from '../../context/ProjectContext';
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 
 interface TopbarProps {
@@ -74,19 +74,19 @@ const Topbar = ({ onToggleSidebar, isExpanded, showSidebarToggle = true }: Topba
           )}
           
           {(isExpanded || !showSidebarToggle) && (
-             <div className="flex items-center gap-2 animate-in fade-in duration-300">
+             <Link to={PATHS.DASHBOARD} className="flex items-center gap-2 animate-in fade-in duration-300">
               <img src="/images/logo_dashboard.png" alt="Fluxa" className="h-6" />
               <span className="text-[10px] font-bold bg-[#D8D8FB] text-[#6366F1] px-1.5 py-0.5 rounded leading-none uppercase tracking-wide">FREE</span>
-            </div>
+            </Link>
           )}
         </div>
 
         {/* Logo when collapsed (starts after the 64px sidebar/topbar section) */}
         {!isExpanded && showSidebarToggle && (
-          <div className="flex items-center gap-2 animate-in fade-in duration-300 ml-2">
+          <Link to={PATHS.DASHBOARD} className="flex items-center gap-2 animate-in fade-in duration-300 ml-2">
             <img src="/images/logo_dashboard.png" alt="Fluxa" className="h-6" />
             <span className="text-[10px] font-bold bg-[#D8D8FB] text-[#6366F1] px-1.5 py-0.5 rounded leading-none uppercase tracking-wide">FREE</span>
-          </div>
+          </Link>
         )}
       </div>
 

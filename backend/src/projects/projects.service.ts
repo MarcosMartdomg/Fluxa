@@ -1,9 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
 
 @Injectable()
 export class ProjectsService {
   constructor(private prisma: PrismaService) {}
+
+  private async assertProjectOwnership(userId: string, projectId: string) {
+    const project = await this.prisma.project.findFirst({
+      where: { id: projectId, userId },
+      select: { id: true },
+    });
+
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+  }
 
   async findAll(userId: string) {
     return this.prisma.project.findMany({
@@ -27,11 +39,42 @@ export class ProjectsService {
   }
 
   async remove(userId: string, id: string) {
-    return this.prisma.project.delete({
-      where: {
-        id,
-        userId,
+    await this.assertProjectOwnership(userId, id);
+    return this.prisma.project.delete({ where: { id } });
+  }
+
+  async getCanvas(userId: string, projectId: string) {
+    await this.assertProjectOwnership(userId, projectId);
+
+    const canvas = await this.prisma.projectCanvas.findUnique({
+      where: { projectId },
+      select: { cards: true, edges: true },
+    });
+
+    if (!canvas) {
+      return { cards: [], edges: [] };
+    }
+
+    return canvas;
+  }
+
+  async updateCanvas(userId: string, projectId: string, data: { cards: unknown[]; edges: unknown[] }) {
+    await this.assertProjectOwnership(userId, projectId);
+    const cards = (Array.isArray(data.cards) ? data.cards : []) as Prisma.JsonArray;
+    const edges = (Array.isArray(data.edges) ? data.edges : []) as Prisma.JsonArray;
+
+    return this.prisma.projectCanvas.upsert({
+      where: { projectId },
+      update: {
+        cards,
+        edges,
       },
+      create: {
+        projectId,
+        cards,
+        edges,
+      },
+      select: { cards: true, edges: true, updatedAt: true },
     });
   }
 }
