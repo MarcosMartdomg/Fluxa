@@ -51,6 +51,7 @@ const ProjectCanvasPage = () => {
   const [newCardTrigger, setNewCardTrigger] = useState('Cuando un boton es clicado...');
   const [linkSource, setLinkSource] = useState('');
   const [linkTarget, setLinkTarget] = useState('');
+  const [panelError, setPanelError] = useState('');
   const [activeTool, setActiveTool] = useState<'pan' | 'select'>('pan');
 
   const [panStart, setPanStart] = useState<{ startX: number; startY: number; originX: number; originY: number } | null>(null);
@@ -101,6 +102,7 @@ const ProjectCanvasPage = () => {
     if (!cardToEdit) return;
     setNewCardTitle(cardToEdit.title);
     setNewCardType(cardToEdit.kind);
+    setPanelError('');
   }, [panelMode, cards, selectedCardId]);
 
   const selectedCard = useMemo(
@@ -202,6 +204,11 @@ const ProjectCanvasPage = () => {
 
   const createCard = () => {
     const normalizedTitle = newCardTitle.trim();
+    if (!normalizedTitle) {
+      setPanelError('El titulo de la tarjeta es obligatorio.');
+      return;
+    }
+
     const nextIndex = cards.length + 1;
     const titleByType = newCardType === 'trigger' ? 'Trigger' : newCardType === 'action' ? 'Action' : 'Connection';
     const subtitleByType =
@@ -221,12 +228,18 @@ const ProjectCanvasPage = () => {
     ]);
     setSelectedCardId(createdId);
     setNewCardTitle('');
+    setPanelError('');
     setPanelMode('edit');
   };
 
   const saveSelectedCard = () => {
     if (!selectedCard) return;
     const normalizedTitle = newCardTitle.trim();
+    if (!normalizedTitle) {
+      setPanelError('El titulo de la tarjeta es obligatorio.');
+      return;
+    }
+
     setCards((previous) =>
       previous.map((card) =>
         card.id === selectedCard.id
@@ -238,16 +251,30 @@ const ProjectCanvasPage = () => {
           : card,
       ),
     );
+    setPanelError('');
   };
 
   const createConnection = () => {
-    if (!linkSource || !linkTarget || linkSource === linkTarget) return;
+    if (!linkSource || !linkTarget) {
+      setPanelError('Debes elegir origen y destino para crear una conexion.');
+      return;
+    }
+
+    if (linkSource === linkTarget) {
+      setPanelError('El origen y destino no pueden ser la misma tarjeta.');
+      return;
+    }
+
     const duplicated = edges.some((edge) => edge.from === linkSource && edge.to === linkTarget);
-    if (duplicated) return;
+    if (duplicated) {
+      setPanelError('Esa conexion ya existe.');
+      return;
+    }
 
     setEdges((previous) => [...previous, { id: crypto.randomUUID(), from: linkSource, to: linkTarget }]);
     setLinkSource('');
     setLinkTarget('');
+    setPanelError('');
   };
 
   const removeSelectedCard = () => {
@@ -319,152 +346,6 @@ const ProjectCanvasPage = () => {
             transformOrigin: 'top left',
           }}
         >
-          {isPanelOpen && (
-            <aside className="absolute right-0 top-0 z-30 h-full w-[320px] border-l border-gray-200 bg-white shadow-2xl">
-              <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
-                <p className="text-sm font-semibold text-gray-700">
-                  {panelMode === 'create' ? 'Nueva tarjeta' : 'Editar tarjeta'}
-                </p>
-                <button
-                  className="rounded-md p-1.5 text-gray-400 transition hover:bg-gray-50 hover:text-gray-600"
-                  onClick={() => setPanelMode(null)}
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-
-              <div className="grid grid-cols-2 border-b border-gray-200 text-sm">
-                <button
-                  onClick={() => setPanelTab('content')}
-                  className={`px-4 py-2.5 font-medium ${panelTab === 'content' ? 'border-b-2 border-[#6366F1] text-[#6366F1]' : 'text-gray-500'}`}
-                >
-                  Contenido
-                </button>
-                <button
-                  onClick={() => setPanelTab('actions')}
-                  className={`px-4 py-2.5 font-medium ${panelTab === 'actions' ? 'border-b-2 border-[#6366F1] text-[#6366F1]' : 'text-gray-500'}`}
-                >
-                  Acciones
-                </button>
-              </div>
-
-              <div className="space-y-4 px-4 py-4">
-                {panelTab === 'content' ? (
-                  <>
-                    <div>
-                      <label className="mb-1 block text-xs font-semibold text-gray-500">* Titulo de tarjeta</label>
-                      <input
-                        value={newCardTitle}
-                        onChange={(event) => setNewCardTitle(event.target.value)}
-                        placeholder="Anadir titulo"
-                        className="h-10 w-full rounded-md border border-gray-200 px-3 text-sm outline-none focus:border-[#6366F1]"
-                      />
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-xs font-semibold text-gray-500">* Tipo de tarjeta</label>
-                      <select
-                        value={newCardType}
-                        onChange={(event) => setNewCardType(event.target.value as CardKind)}
-                        className="h-10 w-full rounded-md border border-gray-200 px-3 text-sm outline-none focus:border-[#6366F1]"
-                      >
-                        <option value="trigger">Trigger</option>
-                        <option value="action">Accion</option>
-                        <option value="connection">Conexion</option>
-                      </select>
-                    </div>
-                    {panelMode === 'create' ? (
-                      <button
-                        onClick={createCard}
-                        className="h-10 w-full rounded-md bg-[#6366F1] text-sm font-semibold text-white transition hover:opacity-90"
-                      >
-                        Crear tarjeta
-                      </button>
-                    ) : (
-                      <button
-                        onClick={saveSelectedCard}
-                        disabled={!selectedCard}
-                        className="h-10 w-full rounded-md bg-[#6366F1] text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        Guardar cambios
-                      </button>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <div>
-                      <label className="mb-1 block text-xs font-semibold text-gray-500">* Accion (requerida)</label>
-                      <select
-                        value={newCardType}
-                        onChange={(event) => setNewCardType(event.target.value as CardKind)}
-                        className="h-10 w-full rounded-md border border-gray-200 px-3 text-sm outline-none focus:border-[#6366F1]"
-                      >
-                        <option value="trigger">Anadir un Trigger</option>
-                        <option value="action">Anadir una Accion</option>
-                        <option value="connection">Anadir una Conexion</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="mb-1 block text-xs font-semibold text-gray-500">* Trigger (requerida)</label>
-                      <div className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-3 py-2">
-                        <span className="text-xs text-gray-600">{newCardTrigger}</span>
-                        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">On</span>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="mb-1 block text-xs font-semibold text-gray-500">Conectar desde</label>
-                      <select
-                        value={linkSource}
-                        onChange={(event) => setLinkSource(event.target.value)}
-                        className="h-10 w-full rounded-md border border-gray-200 px-3 text-sm outline-none focus:border-[#6366F1]"
-                      >
-                        <option value="">Seleccionar origen</option>
-                        {cards.map((card) => (
-                          <option key={card.id} value={card.id}>
-                            {card.title}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="mb-1 block text-xs font-semibold text-gray-500">Conectar hacia</label>
-                      <select
-                        value={linkTarget}
-                        onChange={(event) => setLinkTarget(event.target.value)}
-                        className="h-10 w-full rounded-md border border-gray-200 px-3 text-sm outline-none focus:border-[#6366F1]"
-                      >
-                        <option value="">Seleccionar destino</option>
-                        {cards.map((card) => (
-                          <option key={card.id} value={card.id}>
-                            {card.title}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <button
-                      onClick={createConnection}
-                      disabled={!linkSource || !linkTarget || linkSource === linkTarget}
-                      className="h-10 w-full rounded-md border border-[#6366F1] text-sm font-semibold text-[#6366F1] transition hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Conectar tarjetas
-                    </button>
-
-                    <button
-                      onClick={removeSelectedCard}
-                      disabled={!selectedCard}
-                      className="h-10 w-full rounded-md bg-[#6366F1] text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      Borrar Accion
-                    </button>
-                  </>
-                )}
-              </div>
-            </aside>
-          )}
-
           <svg className="absolute left-0 top-0 h-[2400px] w-[2400px] pointer-events-none">
             {edges.map((edge) => {
               const from = cards.find((card) => card.id === edge.from);
@@ -535,6 +416,169 @@ const ProjectCanvasPage = () => {
           ))}
         </div>
 
+        {isPanelOpen && (
+          <aside className="absolute right-0 top-0 z-30 h-full w-[320px] border-l border-gray-200 bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
+              <p className="text-sm font-semibold text-gray-700">
+                {panelMode === 'create' ? 'Nueva tarjeta' : 'Editar tarjeta'}
+              </p>
+              <button
+                className="rounded-md p-1.5 text-gray-400 transition hover:bg-gray-50 hover:text-gray-600"
+                onClick={() => {
+                  setPanelMode(null);
+                  setPanelError('');
+                }}
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 border-b border-gray-200 text-sm">
+              <button
+                onClick={() => setPanelTab('content')}
+                className={`px-4 py-2.5 font-medium ${panelTab === 'content' ? 'border-b-2 border-[#6366F1] text-[#6366F1]' : 'text-gray-500'}`}
+              >
+                Contenido
+              </button>
+              <button
+                onClick={() => setPanelTab('actions')}
+                className={`px-4 py-2.5 font-medium ${panelTab === 'actions' ? 'border-b-2 border-[#6366F1] text-[#6366F1]' : 'text-gray-500'}`}
+              >
+                Acciones
+              </button>
+            </div>
+
+            <div className="space-y-4 px-4 py-4">
+              <p className="text-[11px] leading-relaxed text-gray-400">
+                {panelMode === 'create'
+                  ? 'Define tipo y nombre para crear una nueva tarjeta en el flujo.'
+                  : 'Edita el bloque seleccionado para ajustar su estructura visual.'}
+              </p>
+              {panelTab === 'content' ? (
+                <>
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-gray-500">* Titulo de tarjeta</label>
+                    <input
+                      value={newCardTitle}
+                      onChange={(event) => {
+                        setNewCardTitle(event.target.value);
+                        if (panelError) setPanelError('');
+                      }}
+                      placeholder="Anadir titulo"
+                      className="h-10 w-full rounded-md border border-gray-200 px-3 text-sm outline-none focus:border-[#6366F1]"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-gray-500">* Tipo de tarjeta</label>
+                    <select
+                      value={newCardType}
+                      onChange={(event) => setNewCardType(event.target.value as CardKind)}
+                      className="h-10 w-full rounded-md border border-gray-200 px-3 text-sm outline-none focus:border-[#6366F1]"
+                    >
+                      <option value="trigger">Trigger</option>
+                      <option value="action">Accion</option>
+                      <option value="connection">Conexion</option>
+                    </select>
+                  </div>
+                  {panelMode === 'create' ? (
+                    <button
+                      onClick={createCard}
+                      disabled={!newCardTitle.trim()}
+                      className="h-10 w-full rounded-md bg-[#6366F1] text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Crear tarjeta
+                    </button>
+                  ) : (
+                    <button
+                      onClick={saveSelectedCard}
+                      disabled={!selectedCard || !newCardTitle.trim()}
+                      className="h-10 w-full rounded-md bg-[#6366F1] text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Guardar cambios
+                    </button>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-gray-500">* Accion (requerida)</label>
+                    <select
+                      value={newCardType}
+                      onChange={(event) => setNewCardType(event.target.value as CardKind)}
+                      className="h-10 w-full rounded-md border border-gray-200 px-3 text-sm outline-none focus:border-[#6366F1]"
+                    >
+                      <option value="trigger">Anadir un Trigger</option>
+                      <option value="action">Anadir una Accion</option>
+                      <option value="connection">Anadir una Conexion</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-gray-500">* Trigger (requerida)</label>
+                    <div className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-3 py-2">
+                      <span className="text-xs text-gray-600">{newCardTrigger}</span>
+                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">On</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-gray-500">Conectar desde</label>
+                    <select
+                      value={linkSource}
+                      onChange={(event) => setLinkSource(event.target.value)}
+                      className="h-10 w-full rounded-md border border-gray-200 px-3 text-sm outline-none focus:border-[#6366F1]"
+                    >
+                      <option value="">Seleccionar origen</option>
+                      {cards.map((card) => (
+                        <option key={card.id} value={card.id}>
+                          {card.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-gray-500">Conectar hacia</label>
+                    <select
+                      value={linkTarget}
+                      onChange={(event) => setLinkTarget(event.target.value)}
+                      className="h-10 w-full rounded-md border border-gray-200 px-3 text-sm outline-none focus:border-[#6366F1]"
+                    >
+                      <option value="">Seleccionar destino</option>
+                      {cards.map((card) => (
+                        <option key={card.id} value={card.id}>
+                          {card.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <button
+                    onClick={createConnection}
+                    disabled={!linkSource || !linkTarget || linkSource === linkTarget}
+                    className="h-10 w-full rounded-md border border-[#6366F1] text-sm font-semibold text-[#6366F1] transition hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Conectar tarjetas
+                  </button>
+
+                  <button
+                    onClick={removeSelectedCard}
+                    disabled={!selectedCard}
+                    className="h-10 w-full rounded-md bg-[#6366F1] text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Borrar Accion
+                  </button>
+                </>
+              )}
+              {panelError && (
+                <p className="rounded-md border border-red-100 bg-red-50 px-3 py-2 text-xs font-medium text-red-600">
+                  {panelError}
+                </p>
+              )}
+            </div>
+          </aside>
+        )}
+
         <div className="pointer-events-none absolute left-1/2 top-4 z-20 -translate-x-1/2">
           <div className="pointer-events-auto rounded-lg border border-gray-200 bg-white p-1 text-xs shadow-sm">
             <button className="rounded-md bg-[#EEF0FF] px-4 py-1.5 font-semibold text-[#4B4EDB] shadow-inner">
@@ -565,42 +609,39 @@ const ProjectCanvasPage = () => {
           </button>
         )}
 
-        <div className="pointer-events-none absolute bottom-6 left-1/2 z-30 -translate-x-1/2">
-          <div className="pointer-events-auto flex items-center gap-1 rounded-xl border border-gray-200 bg-white p-1.5 shadow-xl">
+        <div className="pointer-events-none absolute left-4 top-1/2 z-30 -translate-y-1/2">
+          <div className="pointer-events-auto flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-2 shadow-xl">
             <button
               onClick={() => setActiveTool('pan')}
-              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition ${
+              className={`inline-flex h-10 w-10 items-center justify-center rounded-xl transition ${
                 activeTool === 'pan' ? 'bg-[#EEF0FF] text-[#4B4EDB]' : 'text-gray-600 hover:bg-gray-50'
               }`}
               title="Mover canvas"
             >
-              <Hand className="h-3.5 w-3.5" />
-              Mover
+              <Hand className="h-4 w-4" />
             </button>
 
             <button
               onClick={() => setActiveTool('select')}
-              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition ${
+              className={`inline-flex h-10 w-10 items-center justify-center rounded-xl transition ${
                 activeTool === 'select' ? 'bg-[#EEF0FF] text-[#4B4EDB]' : 'text-gray-600 hover:bg-gray-50'
               }`}
               title="Seleccionar tarjeta"
             >
-              <MousePointer2 className="h-3.5 w-3.5" />
-              Seleccion
+              <MousePointer2 className="h-4 w-4" />
             </button>
 
-            <div className="mx-1 h-5 w-px bg-gray-200" />
+            <div className="h-px w-8 bg-gray-200" />
 
             <button
               onClick={() => {
                 setPanelTab('content');
                 setPanelMode('create');
               }}
-              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-gray-600 transition hover:bg-gray-50"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-gray-600 transition hover:bg-gray-50"
               title="Crear tarjeta"
             >
-              <Plus className="h-3.5 w-3.5" />
-              Tarjeta
+              <Plus className="h-4 w-4" />
             </button>
 
             <button
@@ -608,13 +649,13 @@ const ProjectCanvasPage = () => {
                 setPanelTab('actions');
                 setPanelMode(selectedCard ? 'edit' : 'create');
               }}
-              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-gray-600 transition hover:bg-gray-50"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-gray-600 transition hover:bg-gray-50"
               title="Conectar tarjetas"
             >
-              <Link2 className="h-3.5 w-3.5" />
-              Conectar
+              <Link2 className="h-4 w-4" />
             </button>
-            <div className="ml-1 rounded-md bg-gray-100 px-2 py-1 text-[11px] font-semibold text-gray-600">
+
+            <div className="mt-1 rounded-md bg-gray-100 px-2 py-1 text-[10px] font-semibold text-gray-600">
               {Math.round(canvasZoom * 100)}%
             </div>
           </div>
