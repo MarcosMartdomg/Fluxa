@@ -6,6 +6,7 @@ export const PATHS = {
   WORKFLOWS: '/workflows',
   CREATE_WORKFLOW: '/workflows/new',
   WORKFLOW_DETAIL: '/workflows/:id',
+  PROJECT_DETAIL: '/projects/:id',
   EXECUTIONS: '/executions',
   LOGS: '/logs',
   SETTINGS: '/settings',

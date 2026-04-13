@@ -1,4 +1,4 @@
-import { Plus, Link2, MoreHorizontal, MessageCircle, X, Trash2, Hand, MousePointer2 } from 'lucide-react';
+import { Plus, Link2, MoreHorizontal, MessageCircle, X, Hand, MousePointer2 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useProject } from '../../../context/ProjectContext';
@@ -26,6 +26,9 @@ type CanvasState = {
   edges: CanvasEdge[];
 };
 
+const CARD_WIDTH = 190;
+const CARD_HEIGHT = 70;
+
 const defaultCanvasState: CanvasState = {
   cards: [
     { id: '1', title: '1° Conexiones #1', subtitle: 'Connection block', x: 480, y: 120, kind: 'connection' },
@@ -37,27 +40,62 @@ const defaultCanvasState: CanvasState = {
 const ProjectCanvasPage = () => {
   const { id } = useParams();
   const { projects, activeProject, setActiveProject } = useProject();
+
   const containerRef = useRef<HTMLDivElement>(null);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [viewport, setViewport] = useState({ x: 0, y: 0 });
   const [canvasZoom, setCanvasZoom] = useState(1);
+
   const [cards, setCards] = useState<CanvasCard[]>(defaultCanvasState.cards);
   const [edges, setEdges] = useState<CanvasEdge[]>(defaultCanvasState.edges);
-  const [selectedCardId, setSelectedCardId] = useState<string | null>('2');
+
+  const [selectedCardIds, setSelectedCardIds] = useState<string[]>(['2']);
+  const [selectedEdgeIds, setSelectedEdgeIds] = useState<string[]>([]);
+
   const [panelMode, setPanelMode] = useState<'create' | 'edit' | null>(null);
   const [panelTab, setPanelTab] = useState<'content' | 'actions'>('actions');
+
   const [newCardTitle, setNewCardTitle] = useState('');
   const [newCardType, setNewCardType] = useState<CardKind>('trigger');
-  const [newCardTrigger, setNewCardTrigger] = useState('Cuando un boton es clicado...');
+  const [newCardTrigger] = useState('Cuando un boton es clicado...');
   const [linkSource, setLinkSource] = useState('');
   const [linkTarget, setLinkTarget] = useState('');
   const [panelError, setPanelError] = useState('');
-  const [activeTool, setActiveTool] = useState<'pan' | 'select'>('pan');
+
+  const [activeTool, setActiveTool] = useState<'pan' | 'select'>('select');
+  const [isSpaceDown, setIsSpaceDown] = useState(false);
   const [isCanvasLoaded, setIsCanvasLoaded] = useState(false);
 
-  const [panStart, setPanStart] = useState<{ startX: number; startY: number; originX: number; originY: number } | null>(null);
-  const [draggingCard, setDraggingCard] = useState<{ id: string; offsetX: number; offsetY: number } | null>(null);
+  const [mouseCanvasPosition, setMouseCanvasPosition] = useState({ x: 0, y: 0 });
+
+  const selectedCardId =
+    selectedCardIds.length > 0 ? selectedCardIds[selectedCardIds.length - 1] : null;
+
+  const selectedCard = useMemo(
+    () => cards.find((card) => card.id === selectedCardId) ?? null,
+    [cards, selectedCardId],
+  );
+
+  const [panStart, setPanStart] = useState<{
+    startX: number;
+    startY: number;
+    originX: number;
+    originY: number;
+  } | null>(null);
+
+  const [draggingCard, setDraggingCard] = useState<{
+    id: string;
+    offsetX: number;
+    offsetY: number;
+  } | null>(null);
+
+  const [selectionRect, setSelectionRect] = useState<{
+    startX: number;
+    startY: number;
+    currentX: number;
+    currentY: number;
+  } | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -82,17 +120,29 @@ const ProjectCanvasPage = () => {
         if (loadedCards.length > 0) {
           setCards(loadedCards);
           setEdges(loadedEdges);
-          setSelectedCardId(loadedCards[0]?.id ?? null);
+
+          const firstId = loadedCards[0]?.id;
+          setSelectedCardIds(firstId ? [firstId] : []);
+          setSelectedEdgeIds([]);
         } else {
           setCards(defaultCanvasState.cards);
           setEdges(defaultCanvasState.edges);
-          setSelectedCardId(defaultCanvasState.cards[1]?.id ?? defaultCanvasState.cards[0]?.id ?? null);
+
+          const defaultId =
+            defaultCanvasState.cards[1]?.id ?? defaultCanvasState.cards[0]?.id;
+          setSelectedCardIds(defaultId ? [defaultId] : []);
+          setSelectedEdgeIds([]);
         }
       } catch {
         if (cancelled) return;
+
         setCards(defaultCanvasState.cards);
         setEdges(defaultCanvasState.edges);
-        setSelectedCardId(defaultCanvasState.cards[1]?.id ?? defaultCanvasState.cards[0]?.id ?? null);
+
+        const defaultId =
+          defaultCanvasState.cards[1]?.id ?? defaultCanvasState.cards[0]?.id;
+        setSelectedCardIds(defaultId ? [defaultId] : []);
+        setSelectedEdgeIds([]);
       } finally {
         if (!cancelled) setIsCanvasLoaded(true);
       }
@@ -108,6 +158,7 @@ const ProjectCanvasPage = () => {
 
   useEffect(() => {
     if (!id || !isCanvasLoaded) return;
+
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
 
     saveTimeoutRef.current = setTimeout(() => {
@@ -121,18 +172,18 @@ const ProjectCanvasPage = () => {
 
   useEffect(() => {
     if (panelMode !== 'edit') return;
-    const cardToEdit = cards.find((card) => card.id === selectedCardId);
+
+    const lastSelectedId = selectedCardIds[selectedCardIds.length - 1];
+    const cardToEdit = cards.find((card) => card.id === lastSelectedId);
     if (!cardToEdit) return;
+
     setNewCardTitle(cardToEdit.title);
     setNewCardType(cardToEdit.kind);
     setPanelError('');
-  }, [panelMode, cards, selectedCardId]);
+  }, [panelMode, cards, selectedCardIds]);
 
-  const selectedCard = useMemo(
-    () => cards.find((card) => card.id === selectedCardId) ?? null,
-    [cards, selectedCardId],
-  );
   const isPanelOpen = panelMode !== null;
+
   const bottomCard = useMemo(() => {
     if (cards.length === 0) return null;
     return [...cards].sort((a, b) => b.y - a.y)[0];
@@ -140,6 +191,13 @@ const ProjectCanvasPage = () => {
 
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        const mouseX = (event.clientX - rect.left - viewport.x) / canvasZoom;
+        const mouseY = (event.clientY - rect.top - viewport.y) / canvasZoom;
+        setMouseCanvasPosition({ x: mouseX, y: mouseY });
+      }
+
       if (panStart) {
         setViewport({
           x: panStart.originX + event.clientX - panStart.startX,
@@ -151,28 +209,104 @@ const ProjectCanvasPage = () => {
         const rect = containerRef.current.getBoundingClientRect();
         const mouseX = (event.clientX - rect.left - viewport.x) / canvasZoom;
         const mouseY = (event.clientY - rect.top - viewport.y) / canvasZoom;
+
         setCards((previous) =>
           previous.map((card) =>
             card.id === draggingCard.id
-              ? { ...card, x: mouseX - draggingCard.offsetX, y: mouseY - draggingCard.offsetY }
+              ? {
+                ...card,
+                x: mouseX - draggingCard.offsetX,
+                y: mouseY - draggingCard.offsetY,
+              }
               : card,
           ),
+        );
+      }
+
+      if (selectionRect && containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        setSelectionRect((prev) =>
+          prev
+            ? {
+              ...prev,
+              currentX: event.clientX - rect.left,
+              currentY: event.clientY - rect.top,
+            }
+            : null,
         );
       }
     };
 
     const handleMouseUp = () => {
+      if (selectionRect) {
+        const width = Math.abs(selectionRect.currentX - selectionRect.startX);
+        const height = Math.abs(selectionRect.currentY - selectionRect.startY);
+
+        // Si apenas se ha movido, lo tratamos como click vacío, no como selección
+        if (width < 4 && height < 4) {
+          setSelectionRect(null);
+          setPanStart(null);
+          setDraggingCard(null);
+          return;
+        }
+
+        const x1 = Math.min(selectionRect.startX, selectionRect.currentX);
+        const y1 = Math.min(selectionRect.startY, selectionRect.currentY);
+        const x2 = Math.max(selectionRect.startX, selectionRect.currentX);
+        const y2 = Math.max(selectionRect.startY, selectionRect.currentY);
+
+        const canvasX1 = (x1 - viewport.x) / canvasZoom;
+        const canvasY1 = (y1 - viewport.y) / canvasZoom;
+        const canvasX2 = (x2 - viewport.x) / canvasZoom;
+        const canvasY2 = (y2 - viewport.y) / canvasZoom;
+
+        const newlySelected = cards
+          .filter((card) => {
+            const cardX2 = card.x + CARD_WIDTH;
+            const cardY2 = card.y + CARD_HEIGHT;
+
+            return (
+              card.x < canvasX2 &&
+              cardX2 > canvasX1 &&
+              card.y < canvasY2 &&
+              cardY2 > canvasY1
+            );
+          })
+          .map((c) => c.id);
+
+        const newlySelectedEdges = edges
+          .filter(
+            (edge) =>
+              newlySelected.includes(edge.from) && newlySelected.includes(edge.to),
+          )
+          .map((e) => e.id);
+
+        setSelectedCardIds(newlySelected);
+        setSelectedEdgeIds(newlySelectedEdges);
+        setSelectionRect(null);
+      }
+
       setPanStart(null);
       setDraggingCard(null);
     };
 
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
+
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [canvasZoom, draggingCard, panStart, viewport.x, viewport.y]);
+  }, [
+    canvasZoom,
+    draggingCard,
+    panStart,
+    viewport.x,
+    viewport.y,
+    selectionRect,
+    cards,
+    edges,
+  ]);
 
   useEffect(() => {
     const blockBackMouseButton = (event: MouseEvent) => {
@@ -197,7 +331,10 @@ const ProjectCanvasPage = () => {
     const handleWheel = (event: WheelEvent) => {
       if (!event.ctrlKey) return;
       event.preventDefault();
-      const next = Math.min(2, Math.max(0.5, canvasZoom + (event.deltaY > 0 ? -0.08 : 0.08)));
+      const next = Math.min(
+        2,
+        Math.max(0.5, canvasZoom + (event.deltaY > 0 ? -0.08 : 0.08)),
+      );
       setCanvasZoom(next);
     };
 
@@ -206,36 +343,190 @@ const ProjectCanvasPage = () => {
   }, [canvasZoom]);
 
   useEffect(() => {
-    const handleZoomKeys = (event: KeyboardEvent) => {
-      if (!event.ctrlKey) return;
+    const handleKeyDown = async (event: KeyboardEvent) => {
+      const isControl = event.ctrlKey || event.metaKey;
 
-      if (event.key === '+' || event.key === '=') {
-        event.preventDefault();
-        setCanvasZoom((previous) => Math.min(2, previous + 0.08));
-      } else if (event.key === '-') {
-        event.preventDefault();
-        setCanvasZoom((previous) => Math.max(0.5, previous - 0.08));
-      } else if (event.key === '0') {
-        event.preventDefault();
-        setCanvasZoom(1);
+      if (event.key === 'Delete' || event.key === 'Backspace') {
+        const activeElement = document.activeElement;
+        if (
+          activeElement?.tagName === 'INPUT' ||
+          activeElement?.tagName === 'TEXTAREA'
+        ) {
+          return;
+        }
+
+        if (selectedCardIds.length > 0 || selectedEdgeIds.length > 0) {
+          setCards((prev) => prev.filter((card) => !selectedCardIds.includes(card.id)));
+          setEdges((prev) =>
+            prev.filter(
+              (edge) =>
+                !selectedCardIds.includes(edge.from) &&
+                !selectedCardIds.includes(edge.to) &&
+                !selectedEdgeIds.includes(edge.id),
+            ),
+          );
+          setSelectedCardIds([]);
+          setSelectedEdgeIds([]);
+        }
+        return;
+      }
+
+      if (isControl && event.key.toLowerCase() === 'c') {
+        if (selectedCardIds.length === 0) return;
+
+        const selectedCards = cards.filter((c) => selectedCardIds.includes(c.id));
+        const selectedEdges = edges.filter(
+          (e) =>
+            selectedEdgeIds.includes(e.id) ||
+            (selectedCardIds.includes(e.from) && selectedCardIds.includes(e.to)),
+        );
+
+        if (selectedCards.length === 0) return;
+
+        const minX = Math.min(...selectedCards.map((c) => c.x));
+        const minY = Math.min(...selectedCards.map((c) => c.y));
+
+        const payload = {
+          type: 'fluxa-canvas-fragment',
+          version: 1,
+          origin: { x: minX, y: minY },
+          cards: selectedCards,
+          edges: selectedEdges,
+        };
+
+        try {
+          await navigator.clipboard.writeText(JSON.stringify(payload));
+        } catch (err) {
+          console.error('Failed to copy to clipboard', err);
+        }
+        return;
+      }
+
+      if (isControl && event.key.toLowerCase() === 'v') {
+        const activeElement = document.activeElement;
+        if (
+          activeElement?.tagName === 'INPUT' ||
+          activeElement?.tagName === 'TEXTAREA'
+        ) {
+          return;
+        }
+
+        try {
+          const text = await navigator.clipboard.readText();
+          const data = JSON.parse(text);
+
+          if (data?.type === 'fluxa-canvas-fragment') {
+            const pastedCards = data.cards as CanvasCard[];
+            const pastedEdges = data.edges as CanvasEdge[];
+            const origin = data.origin as { x: number; y: number };
+
+            const idMap: Record<string, string> = {};
+
+            const newCards: CanvasCard[] = pastedCards.map((card) => {
+              const newId = crypto.randomUUID();
+              idMap[card.id] = newId;
+
+              return {
+                ...card,
+                id: newId,
+                x: mouseCanvasPosition.x + (card.x - origin.x),
+                y: mouseCanvasPosition.y + (card.y - origin.y),
+              };
+            });
+
+            const newEdges: CanvasEdge[] = pastedEdges
+              .filter((edge) => idMap[edge.from] && idMap[edge.to])
+              .map((edge) => ({
+                ...edge,
+                id: crypto.randomUUID(),
+                from: idMap[edge.from],
+                to: idMap[edge.to],
+              }));
+
+            setCards((prev) => [...prev, ...newCards]);
+            setEdges((prev) => [...prev, ...newEdges]);
+            setSelectedCardIds(newCards.map((c) => c.id));
+            setSelectedEdgeIds(newEdges.map((e) => e.id));
+          }
+        } catch (err) {
+          console.error('Failed to paste from clipboard', err);
+        }
+        return;
+      }
+
+      if (isControl) {
+        if (event.key === '+' || event.key === '=') {
+          event.preventDefault();
+          setCanvasZoom((previous) => Math.min(2, previous + 0.08));
+        } else if (event.key === '-') {
+          event.preventDefault();
+          setCanvasZoom((previous) => Math.max(0.5, previous - 0.08));
+        } else if (event.key === '0') {
+          event.preventDefault();
+          setCanvasZoom(1);
+        }
       }
     };
 
-    window.addEventListener('keydown', handleZoomKeys);
-    return () => window.removeEventListener('keydown', handleZoomKeys);
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (event.code === 'Space') setIsSpaceDown(false);
+    };
+
+    const handleBlur = () => setIsSpaceDown(false);
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener('blur', handleBlur);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('blur', handleBlur);
+    };
+  }, [selectedCardIds, selectedEdgeIds, cards, edges, mouseCanvasPosition]);
+
+  useEffect(() => {
+    const handleGlobalSpace = (event: KeyboardEvent) => {
+      if (event.code === 'Space') {
+        const activeElement = document.activeElement;
+        if (
+          activeElement?.tagName === 'INPUT' ||
+          activeElement?.tagName === 'TEXTAREA'
+        ) {
+          return;
+        }
+        event.preventDefault();
+        setIsSpaceDown(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalSpace);
+    return () => window.removeEventListener('keydown', handleGlobalSpace);
   }, []);
 
   const createCard = () => {
     const normalizedTitle = newCardTitle.trim();
+
     if (!normalizedTitle) {
       setPanelError('El titulo de la tarjeta es obligatorio.');
       return;
     }
 
     const nextIndex = cards.length + 1;
-    const titleByType = newCardType === 'trigger' ? 'Trigger' : newCardType === 'action' ? 'Action' : 'Connection';
+    const titleByType =
+      newCardType === 'trigger'
+        ? 'Trigger'
+        : newCardType === 'action'
+          ? 'Action'
+          : 'Connection';
+
     const subtitleByType =
-      newCardType === 'trigger' ? 'Trigger block' : newCardType === 'action' ? 'Action block' : 'Connection block';
+      newCardType === 'trigger'
+        ? 'Trigger block'
+        : newCardType === 'action'
+          ? 'Action block'
+          : 'Connection block';
+
     const createdId = crypto.randomUUID();
 
     setCards((previous) => [
@@ -244,12 +535,14 @@ const ProjectCanvasPage = () => {
         id: createdId,
         title: normalizedTitle || `${nextIndex}° ${titleByType}`,
         subtitle: subtitleByType,
-        x: 520 - viewport.x,
-        y: 160 - viewport.y + nextIndex * 30,
+        x: (520 - viewport.x) / canvasZoom,
+        y: (160 - viewport.y) / canvasZoom + nextIndex * 30,
         kind: newCardType,
       },
     ]);
-    setSelectedCardId(createdId);
+
+    setSelectedCardIds([createdId]);
+    setSelectedEdgeIds([]);
     setNewCardTitle('');
     setPanelError('');
     setPanelMode('edit');
@@ -257,6 +550,7 @@ const ProjectCanvasPage = () => {
 
   const saveSelectedCard = () => {
     if (!selectedCard) return;
+
     const normalizedTitle = newCardTitle.trim();
     if (!normalizedTitle) {
       setPanelError('El titulo de la tarjeta es obligatorio.');
@@ -267,13 +561,14 @@ const ProjectCanvasPage = () => {
       previous.map((card) =>
         card.id === selectedCard.id
           ? {
-              ...card,
-              title: normalizedTitle || card.title,
-              kind: newCardType,
-            }
+            ...card,
+            title: normalizedTitle || card.title,
+            kind: newCardType,
+          }
           : card,
       ),
     );
+
     setPanelError('');
   };
 
@@ -288,13 +583,23 @@ const ProjectCanvasPage = () => {
       return;
     }
 
-    const duplicated = edges.some((edge) => edge.from === linkSource && edge.to === linkTarget);
+    const duplicated = edges.some(
+      (edge) => edge.from === linkSource && edge.to === linkTarget,
+    );
+
     if (duplicated) {
       setPanelError('Esa conexion ya existe.');
       return;
     }
 
-    setEdges((previous) => [...previous, { id: crypto.randomUUID(), from: linkSource, to: linkTarget }]);
+    const newEdgeId = crypto.randomUUID();
+
+    setEdges((previous) => [
+      ...previous,
+      { id: newEdgeId, from: linkSource, to: linkTarget },
+    ]);
+
+    setSelectedEdgeIds([newEdgeId]);
     setLinkSource('');
     setLinkTarget('');
     setPanelError('');
@@ -302,26 +607,40 @@ const ProjectCanvasPage = () => {
 
   const removeSelectedCard = () => {
     if (!selectedCardId) return;
+
     setCards((previous) => previous.filter((card) => card.id !== selectedCardId));
-    setEdges((previous) => previous.filter((edge) => edge.from !== selectedCardId && edge.to !== selectedCardId));
-    setSelectedCardId(null);
+    setEdges((previous) =>
+      previous.filter(
+        (edge) => edge.from !== selectedCardId && edge.to !== selectedCardId,
+      ),
+    );
+
+    setSelectedCardIds([]);
+    setSelectedEdgeIds([]);
   };
 
-  const getCardTheme = (kind: CardKind, selected: boolean) => {
+  const getCardTheme = (
+    kind: CardKind,
+    isSelected: boolean,
+    isPrimary: boolean,
+  ) => {
+    const activeBorder = isPrimary ? 'border-[#6366F1]' : 'border-indigo-400/60';
+    const activeRing = isPrimary ? 'ring-2 ring-[#6366F1]/20' : 'ring-1 ring-indigo-400/20';
+
     if (kind === 'action') {
-      return selected
-        ? 'border-[#6366F1] bg-[#2E3138] text-gray-100 ring-2 ring-[#6366F1]/20'
+      return isSelected
+        ? `${activeBorder} bg-[#2E3138] text-gray-100 ${activeRing}`
         : 'border-gray-800 bg-[#2E3138] text-gray-100';
     }
 
     if (kind === 'trigger') {
-      return selected
-        ? 'border-[#6366F1] bg-white text-gray-800 ring-2 ring-[#6366F1]/20'
+      return isSelected
+        ? `${activeBorder} bg-white text-gray-800 ${activeRing}`
         : 'border-gray-300 bg-white text-gray-800';
     }
 
-    return selected
-      ? 'border-[#6366F1] bg-[#EEF0FF] text-[#4B4EDB] ring-2 ring-[#6366F1]/20'
+    return isSelected
+      ? `${activeBorder} bg-[#EEF0FF] text-[#4B4EDB] ${activeRing}`
       : 'border-[#D8D8FB] bg-[#F5F5FF] text-[#4B4EDB]';
   };
 
@@ -329,29 +648,60 @@ const ProjectCanvasPage = () => {
     <div className="h-full bg-[#F6F6F8]">
       <div
         ref={containerRef}
-        className={`relative h-full overflow-hidden bg-[#F3F3F5] ${
-          panStart ? 'cursor-grabbing' : activeTool === 'pan' ? 'cursor-grab' : 'cursor-default'
-        }`}
+        className={`relative h-full overflow-hidden bg-[#F3F3F5] ${panStart || isSpaceDown
+            ? 'cursor-grabbing'
+            : activeTool === 'pan'
+              ? 'cursor-grab'
+              : 'cursor-default'
+          }`}
         onMouseDown={(event) => {
-          const isLeftPanClick = event.button === 0 && activeTool === 'pan';
-          const isMiddleClick = event.button === 1;
-          const isBackButtonClick = event.button === 3;
-          if (!isLeftPanClick && !isMiddleClick && !isBackButtonClick) return;
+          const isPanning =
+            event.button === 1 ||
+            event.button === 3 ||
+            isSpaceDown ||
+            (event.button === 0 && activeTool === 'pan');
 
-          if (event.button === 1 || event.button === 3) {
-            event.preventDefault();
-          }
+          if (isPanning) {
+            if (event.button === 1 || event.button === 3 || isSpaceDown) {
+              event.preventDefault();
+            }
 
-          if (event.button === 0 && activeTool !== 'pan') {
-            setSelectedCardId(null);
+            setPanStart({
+              startX: event.clientX,
+              startY: event.clientY,
+              originX: viewport.x,
+              originY: viewport.y,
+            });
             return;
           }
-          setPanStart({
-            startX: event.clientX,
-            startY: event.clientY,
-            originX: viewport.x,
-            originY: viewport.y,
-          });
+
+          if (event.button === 0) {
+            const rect = containerRef.current?.getBoundingClientRect();
+            if (!rect) return;
+
+            const startX = event.clientX - rect.left;
+            const startY = event.clientY - rect.top;
+
+            setSelectionRect({
+              startX,
+              startY,
+              currentX: startX,
+              currentY: startY,
+            });
+
+            if (!event.shiftKey) {
+              setSelectedCardIds([]);
+              setSelectedEdgeIds([]);
+            }
+          }
+        }}
+        onMouseMove={(event) => {
+          const rect = containerRef.current?.getBoundingClientRect();
+          if (!rect) return;
+
+          const x = (event.clientX - rect.left - viewport.x) / canvasZoom;
+          const y = (event.clientY - rect.top - viewport.y) / canvasZoom;
+          setMouseCanvasPosition({ x, y });
         }}
         onAuxClick={(event) => {
           if (event.button === 1 || event.button === 3) {
@@ -369,12 +719,13 @@ const ProjectCanvasPage = () => {
             transformOrigin: 'top left',
           }}
         >
-          <svg className="absolute left-0 top-0 h-[2400px] w-[2400px] pointer-events-none">
+          <svg className="pointer-events-none absolute left-0 top-0 h-[2400px] w-[2400px]">
             {edges.map((edge) => {
               const from = cards.find((card) => card.id === edge.from);
               const to = cards.find((card) => card.id === edge.to);
               if (!from || !to) return null;
 
+              const isSelected = selectedEdgeIds.includes(edge.id);
               const startX = from.x + 95;
               const startY = from.y + 56;
               const endX = to.x + 95;
@@ -383,9 +734,35 @@ const ProjectCanvasPage = () => {
               const path = `M ${startX} ${startY} C ${startX} ${midY}, ${endX} ${midY}, ${endX} ${endY}`;
 
               return (
-                <g key={edge.id}>
-                  <path d={path} stroke="#9CA3AF" strokeWidth="1.5" fill="none" />
-                  <circle cx={endX} cy={endY} r="4" fill="#fff" stroke="#111827" strokeWidth="1.5" />
+                <g key={edge.id} className="pointer-events-auto cursor-pointer">
+                  <path
+                    d={path}
+                    stroke={isSelected ? '#4B4EDB' : '#9CA3AF'}
+                    strokeWidth={isSelected ? '2.5' : '1.5'}
+                    fill="none"
+                    onClick={(e) => {
+                      e.stopPropagation();
+
+                      if (e.shiftKey) {
+                        setSelectedEdgeIds((prev) =>
+                          prev.includes(edge.id)
+                            ? prev.filter((id) => id !== edge.id)
+                            : [...prev, edge.id],
+                        );
+                      } else {
+                        setSelectedCardIds([]);
+                        setSelectedEdgeIds([edge.id]);
+                      }
+                    }}
+                  />
+                  <circle
+                    cx={endX}
+                    cy={endY}
+                    r="4"
+                    fill="#fff"
+                    stroke={isSelected ? '#4B4EDB' : '#111827'}
+                    strokeWidth="1.5"
+                  />
                 </g>
               );
             })}
@@ -396,23 +773,36 @@ const ProjectCanvasPage = () => {
               key={card.id}
               className={`absolute w-[190px] cursor-grab rounded-sm border p-2 shadow-sm ${getCardTheme(
                 card.kind,
+                selectedCardIds.includes(card.id),
                 selectedCardId === card.id,
               )}`}
               style={{ left: card.x, top: card.y }}
               onClick={(event) => {
                 event.stopPropagation();
-                setSelectedCardId(card.id);
+
+                if (event.shiftKey) {
+                  setSelectedCardIds((prev) =>
+                    prev.includes(card.id)
+                      ? prev.filter((id) => id !== card.id)
+                      : [...prev, card.id],
+                  );
+                } else {
+                  setSelectedCardIds([card.id]);
+                  setSelectedEdgeIds([]);
+                }
+
                 setPanelMode('edit');
               }}
               onMouseDown={(event) => {
-                if (activeTool === 'pan' && event.button === 0) {
-                  return;
-                }
+                if (activeTool === 'pan' && event.button === 0) return;
+
                 event.stopPropagation();
                 if (!containerRef.current) return;
+
                 const rect = containerRef.current.getBoundingClientRect();
                 const localX = (event.clientX - rect.left - viewport.x) / canvasZoom;
                 const localY = (event.clientY - rect.top - viewport.y) / canvasZoom;
+
                 setDraggingCard({
                   id: card.id,
                   offsetX: localX - card.x,
@@ -423,9 +813,12 @@ const ProjectCanvasPage = () => {
               <div className="flex items-center justify-between gap-2 text-[10px]">
                 <div className="flex items-center gap-1">
                   <span
-                    className={`h-2 w-2 rounded-full ${
-                      card.kind === 'action' ? 'bg-emerald-400' : card.kind === 'trigger' ? 'bg-indigo-500' : 'bg-indigo-400'
-                    }`}
+                    className={`h-2 w-2 rounded-full ${card.kind === 'action'
+                        ? 'bg-emerald-400'
+                        : card.kind === 'trigger'
+                          ? 'bg-indigo-500'
+                          : 'bg-indigo-400'
+                      }`}
                   />
                   <span className="truncate font-semibold">{card.title}</span>
                 </div>
@@ -434,10 +827,27 @@ const ProjectCanvasPage = () => {
                   <MoreHorizontal className="h-3 w-3" />
                 </div>
               </div>
-              <p className={`mt-1 text-[9px] ${card.kind === 'action' ? 'text-gray-300' : 'text-gray-500'}`}>{card.subtitle}</p>
+              <p
+                className={`mt-1 text-[9px] ${card.kind === 'action' ? 'text-gray-300' : 'text-gray-500'
+                  }`}
+              >
+                {card.subtitle}
+              </p>
             </div>
           ))}
         </div>
+
+        {selectionRect && (
+          <div
+            className="pointer-events-none absolute z-50 border border-[#6366F1] bg-[#6366F1]/10"
+            style={{
+              left: Math.min(selectionRect.startX, selectionRect.currentX),
+              top: Math.min(selectionRect.startY, selectionRect.currentY),
+              width: Math.abs(selectionRect.currentX - selectionRect.startX),
+              height: Math.abs(selectionRect.currentY - selectionRect.startY),
+            }}
+          />
+        )}
 
         {isPanelOpen && (
           <aside className="absolute right-0 top-0 z-30 h-full w-[320px] border-l border-gray-200 bg-white shadow-2xl">
@@ -459,13 +869,19 @@ const ProjectCanvasPage = () => {
             <div className="grid grid-cols-2 border-b border-gray-200 text-sm">
               <button
                 onClick={() => setPanelTab('content')}
-                className={`px-4 py-2.5 font-medium ${panelTab === 'content' ? 'border-b-2 border-[#6366F1] text-[#6366F1]' : 'text-gray-500'}`}
+                className={`px-4 py-2.5 font-medium ${panelTab === 'content'
+                    ? 'border-b-2 border-[#6366F1] text-[#6366F1]'
+                    : 'text-gray-500'
+                  }`}
               >
                 Contenido
               </button>
               <button
                 onClick={() => setPanelTab('actions')}
-                className={`px-4 py-2.5 font-medium ${panelTab === 'actions' ? 'border-b-2 border-[#6366F1] text-[#6366F1]' : 'text-gray-500'}`}
+                className={`px-4 py-2.5 font-medium ${panelTab === 'actions'
+                    ? 'border-b-2 border-[#6366F1] text-[#6366F1]'
+                    : 'text-gray-500'
+                  }`}
               >
                 Acciones
               </button>
@@ -477,10 +893,13 @@ const ProjectCanvasPage = () => {
                   ? 'Define tipo y nombre para crear una nueva tarjeta en el flujo.'
                   : 'Edita el bloque seleccionado para ajustar su estructura visual.'}
               </p>
+
               {panelTab === 'content' ? (
                 <>
                   <div>
-                    <label className="mb-1 block text-xs font-semibold text-gray-500">* Titulo de tarjeta</label>
+                    <label className="mb-1 block text-xs font-semibold text-gray-500">
+                      * Titulo de tarjeta
+                    </label>
                     <input
                       value={newCardTitle}
                       onChange={(event) => {
@@ -491,8 +910,11 @@ const ProjectCanvasPage = () => {
                       className="h-10 w-full rounded-md border border-gray-200 px-3 text-sm outline-none focus:border-[#6366F1]"
                     />
                   </div>
+
                   <div>
-                    <label className="mb-1 block text-xs font-semibold text-gray-500">* Tipo de tarjeta</label>
+                    <label className="mb-1 block text-xs font-semibold text-gray-500">
+                      * Tipo de tarjeta
+                    </label>
                     <select
                       value={newCardType}
                       onChange={(event) => setNewCardType(event.target.value as CardKind)}
@@ -503,6 +925,7 @@ const ProjectCanvasPage = () => {
                       <option value="connection">Conexion</option>
                     </select>
                   </div>
+
                   {panelMode === 'create' ? (
                     <button
                       onClick={createCard}
@@ -524,7 +947,9 @@ const ProjectCanvasPage = () => {
               ) : (
                 <>
                   <div>
-                    <label className="mb-1 block text-xs font-semibold text-gray-500">* Accion (requerida)</label>
+                    <label className="mb-1 block text-xs font-semibold text-gray-500">
+                      * Accion (requerida)
+                    </label>
                     <select
                       value={newCardType}
                       onChange={(event) => setNewCardType(event.target.value as CardKind)}
@@ -537,15 +962,21 @@ const ProjectCanvasPage = () => {
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-xs font-semibold text-gray-500">* Trigger (requerida)</label>
+                    <label className="mb-1 block text-xs font-semibold text-gray-500">
+                      * Trigger (requerida)
+                    </label>
                     <div className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-3 py-2">
                       <span className="text-xs text-gray-600">{newCardTrigger}</span>
-                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">On</span>
+                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+                        On
+                      </span>
                     </div>
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-xs font-semibold text-gray-500">Conectar desde</label>
+                    <label className="mb-1 block text-xs font-semibold text-gray-500">
+                      Conectar desde
+                    </label>
                     <select
                       value={linkSource}
                       onChange={(event) => setLinkSource(event.target.value)}
@@ -561,7 +992,9 @@ const ProjectCanvasPage = () => {
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-xs font-semibold text-gray-500">Conectar hacia</label>
+                    <label className="mb-1 block text-xs font-semibold text-gray-500">
+                      Conectar hacia
+                    </label>
                     <select
                       value={linkTarget}
                       onChange={(event) => setLinkTarget(event.target.value)}
@@ -593,6 +1026,7 @@ const ProjectCanvasPage = () => {
                   </button>
                 </>
               )}
+
               {panelError && (
                 <p className="rounded-md border border-red-100 bg-red-50 px-3 py-2 text-xs font-medium text-red-600">
                   {panelError}
@@ -607,7 +1041,9 @@ const ProjectCanvasPage = () => {
             <button className="rounded-md bg-[#EEF0FF] px-4 py-1.5 font-semibold text-[#4B4EDB] shadow-inner">
               Editor
             </button>
-            <button className="rounded-md px-4 py-1.5 text-gray-500 hover:bg-gray-50">Ejecuciones</button>
+            <button className="rounded-md px-4 py-1.5 text-gray-500 hover:bg-gray-50">
+              Ejecuciones
+            </button>
           </div>
           <div className="mt-2 flex items-center justify-center gap-1 text-[11px] font-semibold text-[#4B4EDB]">
             <span className="h-1.5 w-1.5 rounded-full bg-[#6366F1]" />
@@ -636,9 +1072,10 @@ const ProjectCanvasPage = () => {
           <div className="pointer-events-auto flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-2 shadow-xl">
             <button
               onClick={() => setActiveTool('pan')}
-              className={`inline-flex h-10 w-10 items-center justify-center rounded-xl transition ${
-                activeTool === 'pan' ? 'bg-[#EEF0FF] text-[#4B4EDB]' : 'text-gray-600 hover:bg-gray-50'
-              }`}
+              className={`inline-flex h-10 w-10 items-center justify-center rounded-xl transition ${activeTool === 'pan'
+                  ? 'bg-[#EEF0FF] text-[#4B4EDB]'
+                  : 'text-gray-600 hover:bg-gray-50'
+                }`}
               title="Mover canvas"
             >
               <Hand className="h-4 w-4" />
@@ -646,9 +1083,10 @@ const ProjectCanvasPage = () => {
 
             <button
               onClick={() => setActiveTool('select')}
-              className={`inline-flex h-10 w-10 items-center justify-center rounded-xl transition ${
-                activeTool === 'select' ? 'bg-[#EEF0FF] text-[#4B4EDB]' : 'text-gray-600 hover:bg-gray-50'
-              }`}
+              className={`inline-flex h-10 w-10 items-center justify-center rounded-xl transition ${activeTool === 'select'
+                  ? 'bg-[#EEF0FF] text-[#4B4EDB]'
+                  : 'text-gray-600 hover:bg-gray-50'
+                }`}
               title="Seleccionar tarjeta"
             >
               <MousePointer2 className="h-4 w-4" />
