@@ -20,6 +20,7 @@ import SettingsPage from '../pages/tool/settings/SettingsPage';
 import LandingPage from '../pages/landing/LandingPage';
 import ProductPage from '../pages/landing/ProductPage';
 import FeaturesPage from '../pages/landing/FeaturesPage';
+import UseCasesPage from '../pages/landing/UseCasesPage';
 
 export const router = createBrowserRouter([
   {
@@ -36,7 +37,7 @@ export const router = createBrowserRouter([
   },
   {
     path: PATHS.USE_CASES,
-    element: <LandingPage />,
+    element: <UseCasesPage />,
   },
   {
     path: PATHS.LOGIN,

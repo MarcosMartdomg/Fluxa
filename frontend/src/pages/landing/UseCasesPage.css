@@ -1,0 +1,79 @@
+.uc-container {
+    @apply min-h-screen bg-white;
+}
+
+.container-xl {
+    @apply max-w-[1440px] mx-auto px-6 sm:px-8 lg:px-16 xl:px-24;
+}
+
+/* --- Hero Section --- */
+.uc-hero {
+    @apply pt-40 pb-20 bg-gray-50/20;
+}
+
+.uc-title {
+    @apply text-5xl md:text-6xl font-medium text-gray-900 leading-[1.1] mb-8 tracking-tight;
+}
+
+.uc-desc {
+    @apply text-lg text-gray-500 max-w-2xl leading-relaxed;
+}
+
+/* --- Value Section --- */
+.uc-value-section {
+    @apply py-32 bg-white;
+}
+
+.uc-value-text {
+    @apply text-3xl md:text-4xl font-medium text-gray-900 leading-[1.4] tracking-tight;
+}
+
+.text-highlight {
+    @apply text-[#6366F1] font-bold;
+}
+
+/* --- Use Case Grid --- */
+.uc-grid-section {
+    @apply py-24 bg-gray-50/50;
+}
+
+.uc-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8;
+}
+
+.uc-card {
+    @apply p-8 rounded-2xl bg-white border border-gray-100 shadow-sm transition-all hover:shadow-md hover:-translate-y-1;
+}
+
+.uc-card-title {
+    @apply text-lg font-bold text-gray-900 mb-4 leading-snug;
+}
+
+.uc-card-desc {
+    @apply text-sm text-gray-500 leading-relaxed;
+}
+
+/* --- Featured Bottom Section --- */
+.uc-featured-bottom {
+    @apply py-32 bg-[#6366F1];
+}
+
+.uc-featured-title {
+    @apply text-4xl md:text-5xl font-medium mb-8 tracking-tight;
+}
+
+.uc-featured-desc {
+    @apply text-lg text-white/80 leading-relaxed max-w-xl;
+}
+
+.uc-featured-visual {
+    @apply border border-white/10;
+}
+
+/* --- Mobile Responsive Pacing --- */
+@media (max-width: 768px) {
+    .uc-hero { @apply pt-32 pb-12; }
+    .uc-value-section { @apply py-20; }
+    .uc-grid-section { @apply py-16; }
+    .uc-featured-bottom { @apply py-20; }
+}
