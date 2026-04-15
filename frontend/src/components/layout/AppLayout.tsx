@@ -8,7 +8,7 @@ import FloatingChatButton from '../common/FloatingChatButton';
 const AppLayout = () => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
   const location = useLocation();
-  const isProjectCanvasRoute = /^\/projects\/[^/]+$/.test(location.pathname);
+  const isProjectCanvasRoute = /^\/tool\/projects\/[^/]+/.test(location.pathname);
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">

@@ -18,6 +18,8 @@ import LogsPage from '../pages/tool/logs/LogsPage';
 import SettingsPage from '../pages/tool/settings/SettingsPage';
 
 import LandingPage from '../pages/landing/LandingPage';
+import ProductPage from '../pages/landing/ProductPage';
+import FeaturesPage from '../pages/landing/FeaturesPage';
 
 export const router = createBrowserRouter([
   {
@@ -26,11 +28,11 @@ export const router = createBrowserRouter([
   },
   {
     path: PATHS.PRODUCT,
-    element: <LandingPage />,
+    element: <ProductPage />,
   },
   {
     path: PATHS.FEATURES,
-    element: <LandingPage />,
+    element: <FeaturesPage />,
   },
   {
     path: PATHS.USE_CASES,

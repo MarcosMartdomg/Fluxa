@@ -1,0 +1,95 @@
+.product-container {
+    @apply min-h-screen bg-white;
+}
+
+.container-xl {
+    @apply max-w-[1440px] mx-auto px-6 sm:px-8 lg:px-16 xl:px-24;
+}
+
+/* --- Hero Section --- */
+.product-hero {
+    @apply pt-40 pb-20 bg-gray-50/30;
+}
+
+.product-badge {
+    @apply px-4 py-1 rounded-full bg-[#6366F1]/10 text-[#6366F1] font-bold text-xs tracking-wider mb-6;
+}
+
+.product-title {
+    @apply text-5xl md:text-6xl font-medium text-gray-900 leading-[1.1] mb-8 tracking-tight;
+}
+
+.product-subtitle {
+    @apply text-lg text-gray-500 max-w-2xl leading-relaxed;
+}
+
+/* --- Event Section (Purple Highlight) --- */
+.event-section {
+    @apply py-32 bg-[#6366F1] text-white;
+}
+
+.event-title {
+    @apply text-4xl md:text-5xl font-medium mb-6 tracking-tight;
+}
+
+.event-description {
+    @apply text-lg text-white/80 max-w-3xl leading-relaxed;
+}
+
+/* --- Process Flow Section --- */
+.process-section {
+    @apply py-32 bg-white;
+}
+
+.process-grid {
+    @apply grid grid-cols-1 md:grid-cols-5 gap-8;
+}
+
+.process-card {
+    @apply flex flex-col items-center text-center p-8 rounded-2xl bg-white border border-gray-100 shadow-sm transition-all hover:shadow-md hover:-translate-y-1;
+}
+
+.process-num {
+    @apply w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mb-6;
+}
+
+.process-name {
+    @apply text-lg font-bold text-gray-900 mb-2;
+}
+
+.process-desc {
+    @apply text-sm text-gray-500 leading-snug;
+}
+
+/* --- Components Grid Section --- */
+.components-section {
+    @apply py-32 bg-gray-50/50;
+}
+
+.section-label {
+    @apply text-3xl font-bold text-gray-900 mb-16 text-center;
+}
+
+.components-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8;
+}
+
+.comp-card {
+    @apply p-10 bg-white rounded-2xl border border-gray-100 shadow-sm hover:border-[#6366F1]/30 transition-colors;
+}
+
+.comp-title {
+    @apply text-xl font-bold text-gray-900 mb-4;
+}
+
+.comp-desc {
+    @apply text-sm text-gray-500 leading-relaxed;
+}
+
+/* --- Mobile Responsive Pacing --- */
+@media (max-width: 768px) {
+    .product-hero { @apply pt-32 pb-12; }
+    .event-section { @apply py-20; }
+    .process-section { @apply py-20; }
+    .components-section { @apply py-20; }
+}

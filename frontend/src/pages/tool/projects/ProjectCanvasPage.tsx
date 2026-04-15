@@ -1,6 +1,6 @@
 import { Plus, Link2, MoreHorizontal, MessageCircle, X, Hand, MousePointer2 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useProject } from '../../../context/ProjectContext';
 import projectsService from '../../../services/projects.service';
 
@@ -39,6 +39,7 @@ const defaultCanvasState: CanvasState = {
 
 const ProjectCanvasPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { projects, activeProject, setActiveProject } = useProject();
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -1041,7 +1042,13 @@ const ProjectCanvasPage = () => {
             <button className="rounded-md bg-[#EEF0FF] px-4 py-1.5 font-semibold text-[#4B4EDB] shadow-inner">
               Editor
             </button>
-            <button className="rounded-md px-4 py-1.5 text-gray-500 hover:bg-gray-50">
+            <button
+              onClick={() => {
+                if (!id) return;
+                navigate(`/tool/projects/${id}/executions`);
+              }}
+              className="rounded-md px-4 py-1.5 text-gray-500 hover:bg-gray-50"
+            >
               Ejecuciones
             </button>
           </div>

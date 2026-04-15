@@ -118,7 +118,7 @@ const ProjectDetailPage = () => {
                     <Clock className="w-3.5 h-3.5" />
                     <span>{workflow.isActive ? 'Active' : 'Paused'}</span>
                   </div>
-                  <Link to={`/workflows/${workflow.id}`} className="text-xs font-bold text-[#6366F1] hover:underline">View workflow</Link>
+                  <Link to={`/tool/workflows/${workflow.id}`} className="text-xs font-bold text-[#6366F1] hover:underline">View workflow</Link>
                 </div>
               </div>
             ))
