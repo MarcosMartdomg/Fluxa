@@ -1,37 +1,40 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import './Navbar.css';
 
 const Navbar: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('Home');
+  const location = useLocation();
 
   const navItems = [
-    'Home', 'Product', 'Features', 'Use Cases', 'Docs', 'Pricing'
+    { name: 'Product', path: PATHS.PRODUCT },
+    { name: 'Features', path: PATHS.FEATURES },
+    { name: 'Use Cases', path: PATHS.USE_CASES }
   ];
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md z-50 border-b border-gray-100/50">
       <div className="max-w-[1440px] mx-auto px-6 sm:px-8 lg:px-16 xl:px-24">
-        <div className="flex justify-between items-center h-20">
-          <div className="flex items-center gap-3">
-            <img src="/images/logo.png" alt="Fluxa Logo" className="h-[22px] w-auto" />
-          </div>
+        <div className="flex justify-between items-center h-16">
+          <div className="flex items-center gap-12">
+            <Link to="/" className="flex items-center">
+              <img src="/images/logo.png" alt="Fluxa Logo" className="h-[28px] w-auto" />
+            </Link>
 
-          <div className="hidden md:flex items-center gap-10">
-            {navItems.map((item) => (
-              <a
-                key={item}
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setActiveTab(item);
-                }}
-                className={`nav-link ${activeTab === item ? 'active' : ''}`}
-              >
-                {item}
-              </a>
-            ))}
+            <div className="hidden md:flex items-center gap-8">
+              {navItems.map((item) => {
+                const isActive = location.pathname === item.path;
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.path}
+                    className={`nav-link ${isActive ? 'active' : ''}`}
+                  >
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </div>
           </div>
 
           <div className="flex items-center gap-4">

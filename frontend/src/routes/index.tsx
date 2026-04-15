@@ -25,12 +25,41 @@ export const router = createBrowserRouter([
     element: <LandingPage />,
   },
   {
+    path: PATHS.PRODUCT,
+    element: <LandingPage />,
+  },
+  {
+    path: PATHS.FEATURES,
+    element: <LandingPage />,
+  },
+  {
+    path: PATHS.USE_CASES,
+    element: <LandingPage />,
+  },
+  {
     path: PATHS.LOGIN,
     element: <LoginPage />,
   },
   {
     path: PATHS.REGISTER,
     element: <RegisterPage />,
+  },
+  // Legacy Redirects
+  {
+    path: '/dashboard',
+    element: <Navigate to={PATHS.DASHBOARD} replace />,
+  },
+  {
+    path: '/projects/:id',
+    element: <Navigate to="/tool/projects/:id" replace />,
+  },
+  {
+    path: '/projects/:id/executions',
+    element: <Navigate to="/tool/projects/:id/executions" replace />,
+  },
+  {
+    path: '/workflows',
+    element: <Navigate to={PATHS.WORKFLOWS} replace />,
   },
   {
     element: <ProtectedRoute />,
@@ -45,6 +74,10 @@ export const router = createBrowserRouter([
           {
             path: PATHS.PROJECT_DETAIL,
             element: <ProjectCanvasPage />,
+          },
+          {
+            path: PATHS.PROJECT_EXECUTIONS,
+            element: <ExecutionsPage />,
           },
           {
             path: PATHS.WORKFLOWS,
