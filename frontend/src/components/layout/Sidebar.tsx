@@ -33,23 +33,30 @@ const Sidebar = ({ isExpanded }: SidebarProps) => {
       )}
       style={{ transition: 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1)' }}
     >
-      <div className={clsx("flex flex-col items-center pt-4 pb-6 h-full", isExpanded && "items-stretch px-3")}>
+      <div className="flex flex-col pt-4 pb-6 h-full px-2 items-center transition-all duration-300">
         
         {/* Create Button (Integrated grid item) */}
         <button 
           onClick={() => navigate(PATHS.CREATE_WORKFLOW)}
-          className={clsx(
-            "flex items-center rounded-lg transition-all duration-200 bg-[#6366F1] text-white mb-4 shrink-0 overflow-hidden",
-            isExpanded ? "px-3 py-2 gap-4 w-full" : "h-10 w-10 justify-center mx-auto"
-          )}
+          className="flex items-center h-10 w-full mb-4 shrink-0 overflow-hidden group"
         >
-          <Plus className="w-5 h-5 flex-shrink-0" />
-          <span className={clsx(
-            "text-[14px] font-semibold whitespace-nowrap transition-all duration-200",
-            isExpanded ? "opacity-100 translate-x-0 delay-100" : "opacity-0 -translate-x-4 pointer-events-none"
+          <div className={clsx(
+            "flex items-center rounded-lg transition-all duration-200 bg-[#6366F1] text-white shadow-sm overflow-hidden",
+            isExpanded ? "w-full h-full" : "w-10 h-10 mx-auto flex-shrink-0"
           )}>
-            Create
-          </span>
+            <div className={clsx(
+              "flex-shrink-0 flex items-center justify-center transition-all duration-200",
+              isExpanded ? "w-12" : "w-10"
+            )}>
+              <Plus className="w-5 h-5 flex-shrink-0" />
+            </div>
+            <span className={clsx(
+              "text-[14px] font-semibold whitespace-nowrap transition-all duration-200",
+              isExpanded ? "opacity-100 translate-x-0 delay-100" : "opacity-0 -translate-x-4 pointer-events-none"
+            )}>
+              Create
+            </span>
+          </div>
         </button>
 
 
@@ -65,14 +72,16 @@ const Sidebar = ({ isExpanded }: SidebarProps) => {
                 to={item.path}
                 title={isExpanded ? undefined : item.name}
                 className={clsx(
-                  'flex items-center rounded-lg transition-all duration-200 group relative overflow-hidden',
-                  isExpanded ? 'px-3 py-2 gap-4' : 'h-10 w-10 justify-center mx-auto',
+                  'flex items-center h-10 rounded-lg transition-all duration-200 group relative overflow-hidden w-full',
                   isActive
                     ? 'bg-indigo-50 text-indigo-600'
                     : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
                 )}
               >
-                <Icon className="w-5 h-5 flex-shrink-0" />
+                <div className="w-12 h-10 flex-shrink-0 flex items-center justify-center">
+                  <Icon className="w-5 h-5 flex-shrink-0" />
+                </div>
+                
                 <span className={clsx(
                   "text-[14px] font-semibold whitespace-nowrap transition-all duration-200",
                   isExpanded ? "opacity-100 translate-x-0 delay-100" : "opacity-0 -translate-x-4 pointer-events-none",
@@ -82,7 +91,7 @@ const Sidebar = ({ isExpanded }: SidebarProps) => {
                 </span>
 
                 {!isActive && !isExpanded && (
-                  <div className="absolute left-full ml-3 px-2 py-1 bg-gray-900 text-white text-[10px] rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 transform translate-x-[-4px] group-hover:translate-x-0 whitespace-nowrap z-50 shadow-md">
+                  <div className="absolute left-[54px] ml-2 px-2 py-1 bg-gray-900 text-white text-[10px] rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 transform translate-x-[-4px] group-hover:translate-x-0 whitespace-nowrap z-50 shadow-md">
                     {item.name}
                   </div>
                 )}
@@ -91,17 +100,16 @@ const Sidebar = ({ isExpanded }: SidebarProps) => {
           })}
           
           {/* Separator Line */}
-          <div className={clsx(
-            "my-4 border-t border-gray-100",
-            isExpanded ? "mx-2" : "w-8 mx-auto"
-          )} />
+          <div className="my-4 border-t border-gray-100 transition-all duration-300 w-full" />
 
           {/* Secondary Items integrated in the flow */}
           <button className={clsx(
-            "flex items-center text-gray-400 rounded-lg transition-all duration-200 group overflow-hidden",
-            isExpanded ? "px-3 py-2 gap-4" : "h-10 w-10 justify-center mx-auto hover:bg-gray-100 hover:text-gray-700"
+            "flex items-center h-10 rounded-lg transition-all duration-200 group overflow-hidden w-full",
+            "text-gray-400 hover:bg-gray-100 hover:text-gray-700"
           )}>
-            <Clock className="w-5 h-5 flex-shrink-0" />
+            <div className="w-12 h-10 flex-shrink-0 flex items-center justify-center">
+              <Clock className="w-5 h-5 flex-shrink-0" />
+            </div>
             <span className={clsx(
               "text-[14px] font-semibold whitespace-nowrap transition-all duration-200",
               isExpanded ? "opacity-100 translate-x-0 delay-100" : "opacity-0 -translate-x-4 pointer-events-none",
@@ -110,11 +118,14 @@ const Sidebar = ({ isExpanded }: SidebarProps) => {
               Log
             </span>
           </button>
+          
           <button className={clsx(
-            "flex items-center text-gray-400 rounded-lg transition-all duration-200 group overflow-hidden",
-            isExpanded ? "px-3 py-2 gap-4" : "h-10 w-10 justify-center mx-auto hover:bg-gray-100 hover:text-gray-700"
+            "flex items-center h-10 rounded-lg transition-all duration-200 group overflow-hidden w-full",
+            "text-gray-400 hover:bg-gray-100 hover:text-gray-700"
           )}>
-            <MoreHorizontal className="w-5 h-5 flex-shrink-0" />
+            <div className="w-12 h-10 flex-shrink-0 flex items-center justify-center">
+              <MoreHorizontal className="w-5 h-5 flex-shrink-0" />
+            </div>
             <span className={clsx(
               "text-[14px] font-semibold whitespace-nowrap transition-all duration-200",
               isExpanded ? "opacity-100 translate-x-0 delay-100" : "opacity-0 -translate-x-4 pointer-events-none",
