@@ -1,47 +1,58 @@
+import { useNavigate } from 'react-router-dom';
+import { PATHS } from '../../routes/paths';
 import Navbar from '../../components/landing/Navbar';
 import Footer from '../../components/landing/Footer';
 import './LandingPage.css';
 
 // --- Internal Components for Landing Sections ---
 
-const Hero: React.FC = () => (
-  <section className="section-hero">
-    <div className="container-xl">
-      <div className="grid-hero">
-        <div className="hero-text-column mb-12 lg:mb-0">
-          <span className="brand-badge">
-            PLATAFORMA DE AUTOMATIZACIÓN INTELIGENTE
-          </span>
-          <h1 className="hero-title">
-            Automatiza procesos <br />
-            y conecta sistemas <br />
-            sin esfuerzo
-          </h1>
-          <p className="hero-description">
-            Fluxa es una plataforma que permite crear automatizaciones, conectar APIs y ejecutar flujos de trabajo automáticamente. Diseñada para desarrolladores que quieren optimizar procesos, reducir tareas repetitivas y escalar sus sistemas mediante automatización inteligente.
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <button className="cta-button-secondary">
-              Contacta con nosotros
-            </button>
-            <button className="cta-button-primary">
-              Empieza ahora con Fluxa
-            </button>
+const Hero: React.FC = () => {
+  const navigate = useNavigate();
+  return (
+    <section className="section-hero">
+      <div className="container-xl">
+        <div className="grid-hero">
+          <div className="hero-text-column mb-12 lg:mb-0">
+            <span className="brand-badge">
+              PLATAFORMA DE AUTOMATIZACIÓN INTELIGENTE
+            </span>
+            <h1 className="hero-title">
+              Automatiza procesos <br />
+              y conecta sistemas <br />
+              sin esfuerzo
+            </h1>
+            <p className="hero-description">
+              Fluxa es una plataforma que permite crear automatizaciones, conectar APIs y ejecutar flujos de trabajo automáticamente. Diseñada para desarrolladores que quieren optimizar procesos, reducir tareas repetitivas y escalar sus sistemas mediante automatización inteligente.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <button 
+                onClick={() => navigate(PATHS.CONTACT)}
+                className="cta-button-secondary"
+              >
+                Contacta con nosotros
+              </button>
+              <button 
+                onClick={() => navigate(PATHS.LOGIN)}
+                className="cta-button-primary"
+              >
+                Empieza ahora con Fluxa
+              </button>
+            </div>
           </div>
-        </div>
-        <div className="relative">
-          <div className="hero-image-container">
-            <img 
-              src="/images/imagen_Landing.png" 
-              alt="Fluxa Platform Visualization" 
-              className="w-full h-auto"
-            />
+          <div className="relative">
+            <div className="hero-image-container">
+              <img 
+                src="/images/imagen_Landing.png" 
+                alt="Fluxa Platform Visualization" 
+                className="w-full h-auto"
+              />
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 const Features: React.FC = () => (
   <section className="section-features">
     <div className="container-xl">

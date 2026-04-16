@@ -21,11 +21,16 @@ import LandingPage from '../pages/landing/LandingPage';
 import ProductPage from '../pages/landing/ProductPage';
 import FeaturesPage from '../pages/landing/FeaturesPage';
 import UseCasesPage from '../pages/landing/UseCasesPage';
+import ContactPage from '../pages/landing/ContactPage';
 
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <LandingPage />,
+  },
+  {
+    path: PATHS.CONTACT,
+    element: <ContactPage />,
   },
   {
     path: PATHS.PRODUCT,

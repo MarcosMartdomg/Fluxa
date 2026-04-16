@@ -13,6 +13,7 @@ import { SchedulerModule } from './scheduler/scheduler.module';
 import { BullMqModule } from './queue/bullmq.module';
 import { validate } from './config/env.validation';
 import { ProjectsModule } from './projects/projects.module';
+import { ContactsModule } from './contacts/contacts.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ProjectsModule } from './projects/projects.module';
     WebhooksModule,
     SchedulerModule,
     ProjectsModule,
+    ContactsModule,
   ],
 })
 

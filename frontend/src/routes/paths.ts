@@ -13,4 +13,5 @@ export const PATHS = {
   EXECUTIONS: '/tool/executions',
   LOGS: '/tool/logs',
   SETTINGS: '/tool/settings',
+  CONTACT: '/contact',
 };
