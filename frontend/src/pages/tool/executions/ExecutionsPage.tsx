@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useProject } from '../../../context/ProjectContext';
 import projectsService from '../../../services/projects.service';
+import ModeSwitcher from '../../../components/common/ModeSwitcher';
 
 type CardKind = 'trigger' | 'action' | 'connection';
 
@@ -276,251 +277,198 @@ const ExecutionsPage = () => {
 
   return (
     <div className="executions-page">
-      <div className="executions-canvas-layout">
-        <div className="executions-canvas-wrapper">
-          <div className="executions-mode-switch">
-            <button
-              onClick={() => {
-                if (!id) return;
-                navigate(`/tool/projects/${id}`);
-              }}
-              className="executions-mode-button"
-            >
-              Editor
-            </button>
-            <button className="executions-mode-button executions-mode-button--active">
-              Ejecuciones
-            </button>
+      <div className="executions-layout">
+        {/* --- Columna Izquierda: Historial --- */}
+        <aside className="executions-history-sidebar">
+          <div className="sidebar-header">
+            <h2 className="sidebar-title">Ejecuciones</h2>
+            <p className="sidebar-subtitle">Historial de runs del workflow</p>
           </div>
 
-          <div className="executions-mode-label">
-            <span className="executions-mode-label__dot" />
-            Modo ejecucion activo
-          </div>
-
-          <div
-            className="executions-canvas-grid"
-            style={{
-              transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${canvasZoom})`,
-              transformOrigin: 'top left',
-            }}
-          >
-            <svg className="executions-svg-layer">
-              {edges.map((edge) => {
-                const from = cards.find((card) => card.id === edge.from);
-                const to = cards.find((card) => card.id === edge.to);
-                if (!from || !to) return null;
-
-                const startX = from.x + 95;
-                const startY = from.y + 56;
-                const endX = to.x + 95;
-                const endY = to.y;
-                const midY = (startY + endY) / 2;
-                const path = `M ${startX} ${startY} C ${startX} ${midY}, ${endX} ${midY}, ${endX} ${endY}`;
-                const stroke = getEdgeColor(edge);
-
-                return (
-                  <g key={edge.id}>
-                    <path d={path} stroke={stroke} strokeWidth="2" fill="none" />
-                    <circle cx={endX} cy={endY} r="4" fill="#fff" stroke={stroke} strokeWidth="1.5" />
-                  </g>
-                );
-              })}
-            </svg>
-
-            {cards.map((card) => {
-              const nodeState = executionNodeMap.get(card.id);
-
+          <div className="history-list">
+            {executions.map((execution) => {
+              const isActive = execution.id === selectedExecutionId;
               return (
-                <div
-                  key={card.id}
-                  className={getNodeTheme(card, nodeState)}
-                  style={{ left: card.x, top: card.y }}
+                <button
+                  key={execution.id}
+                  onClick={() => setSelectedExecutionId(execution.id)}
+                  className={`history-card ${isActive ? 'active' : ''}`}
                 >
-                  <div className="canvas-node__header">
-                    <div className="canvas-node__title-group">
-                      <span
-                        className={`canvas-node__kind-dot ${card.kind === 'action'
-                            ? 'canvas-node__kind-dot--action'
-                            : card.kind === 'trigger'
-                              ? 'canvas-node__kind-dot--trigger'
-                              : 'canvas-node__kind-dot--connection'
-                          }`}
-                      />
-                      <span className="canvas-node__title">{card.title}</span>
-                    </div>
-
-                    <div>
-                      {nodeState?.status === 'running' ? (
-                        <Loader2 className="w-3 h-3 execution-spin node-icon node-icon--running" />
-                      ) : nodeState?.status === 'success' ? (
-                        <CheckCircle2 className="w-3 h-3 node-icon node-icon--success" />
-                      ) : nodeState?.status === 'error' ? (
-                        <XCircle className="w-3 h-3 node-icon node-icon--error" />
-                      ) : nodeState?.status === 'waiting' ? (
-                        <Clock3 className="w-3 h-3 node-icon node-icon--waiting" />
-                      ) : (
-                        <PauseCircle className="w-3 h-3 node-icon node-icon--idle" />
-                      )}
-                    </div>
-                  </div>
-
-                  <p className="canvas-node__subtitle">{card.subtitle}</p>
-
-                  <div className="canvas-node__footer">
-                    <span className="canvas-node__status-pill">
-                      <span className={getNodeStatusDot(nodeState?.status)} />
-                      {getNodeStatusLabel(nodeState?.status)}
-                    </span>
-
-                    <span className="canvas-node__duration">
-                      {formatDuration(nodeState?.durationMs)}
+                  <div className="history-card-top">
+                    <span className="execution-id">{execution.id}</span>
+                    <span className={getExecutionBadge(execution.status)}>
+                      {getExecutionStatusIcon(execution.status)}
                     </span>
                   </div>
-                </div>
+                  <div className="history-card-meta">
+                    <span>{formatDateTime(execution.startedAt)}</span>
+                    <span className="dot" />
+                    <span>{formatDuration(execution.totalDurationMs)}</span>
+                  </div>
+                </button>
               );
             })}
           </div>
-        </div>
+        </aside>
 
-        <aside className="executions-sidebar">
-          <div className="executions-sidebar__section executions-sidebar__section--border">
-            <p className="executions-sidebar__title">Ejecuciones</p>
-            <p className="executions-sidebar__subtitle">
-              Consulta el estado actual de cada run del workflow.
-            </p>
-          </div>
+        {/* --- Columna Central: Canvas y Header --- */}
+        <main className="executions-main relative">
+          {id && <ModeSwitcher activeMode="executions" projectId={id} />}
 
-          <div className="executions-sidebar__section executions-sidebar__section--border">
-            <div className="executions-project-card">
-              <p className="executions-project-card__label">Proyecto</p>
-              <p className="executions-project-card__name">
-                {activeProject?.name ?? 'Proyecto actual'}
-              </p>
-              <p className="executions-project-card__meta">
-                Canvas cargado: {isCanvasLoaded ? 'Si' : 'Cargando...'}
-              </p>
-            </div>
-          </div>
-
-          <div className="executions-sidebar__section executions-sidebar__section--scroll executions-sidebar__section--border">
-            <p className="executions-sidebar__mini-title">Historial de ejecuciones</p>
-
-            <div className="executions-history-list">
-              {executions.map((execution) => {
-                const isActive = execution.id === selectedExecutionId;
-
-                return (
-                  <button
-                    key={execution.id}
-                    onClick={() => setSelectedExecutionId(execution.id)}
-                    className={`execution-history-card ${isActive ? 'execution-history-card--active' : ''}`}
-                  >
-                    <div className="execution-history-card__top">
-                      <div>
-                        <p className="execution-history-card__id">{execution.id}</p>
-                        <p className="execution-history-card__trigger">
-                          Trigger: {execution.triggerType}
-                        </p>
-                      </div>
-
-                      <span className={getExecutionBadge(execution.status)}>
-                        {getExecutionStatusIcon(execution.status)}
-                        {execution.status}
-                      </span>
-                    </div>
-
-                    <div className="execution-history-card__meta">
-                      <div>
-                        <p className="execution-history-card__meta-label">Inicio</p>
-                        <p>{formatDateTime(execution.startedAt)}</p>
-                      </div>
-                      <div>
-                        <p className="execution-history-card__meta-label">Duracion</p>
-                        <p>{formatDuration(execution.totalDurationMs)}</p>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="executions-sidebar__section executions-sidebar__section--scroll">
-            <p className="executions-sidebar__mini-title">Detalle de ejecucion</p>
-
-            {selectedExecution ? (
-              <div className="execution-detail-stack">
-                <div className="execution-detail-summary">
-                  <div className="execution-detail-summary__top">
-                    <p className="execution-detail-summary__id">{selectedExecution.id}</p>
-                    <span className={getExecutionBadge(selectedExecution.status)}>
-                      {getExecutionStatusIcon(selectedExecution.status)}
-                      {selectedExecution.status}
-                    </span>
+          <div className="executions-content">
+            {selectedExecution && (
+              <div className="execution-status-header">
+                <div className="status-main">
+                  <div className={`status-icon-wrapper ${selectedExecution.status}`}>
+                    {getExecutionStatusIcon(selectedExecution.status)}
                   </div>
-
-                  <div className="execution-detail-summary__grid">
-                    <div>
-                      <p className="execution-detail-summary__label">Inicio</p>
-                      <p>{formatDateTime(selectedExecution.startedAt)}</p>
-                    </div>
-                    <div>
-                      <p className="execution-detail-summary__label">Fin</p>
-                      <p>{formatDateTime(selectedExecution.finishedAt)}</p>
-                    </div>
-                    <div>
-                      <p className="execution-detail-summary__label">Trigger</p>
-                      <p>{selectedExecution.triggerType}</p>
-                    </div>
-                    <div>
-                      <p className="execution-detail-summary__label">Duracion total</p>
-                      <p>{formatDuration(selectedExecution.totalDurationMs)}</p>
-                    </div>
+                  <div>
+                    <h1 className="status-title">
+                      Ejecución {selectedExecution.status === 'running' ? 'en curso' : selectedExecution.status === 'success' ? 'completada' : 'fallida'}
+                    </h1>
+                    <p className="status-meta">
+                      ID: {selectedExecution.id} • {selectedExecution.triggerType} • {formatDateTime(selectedExecution.startedAt)}
+                    </p>
                   </div>
                 </div>
 
-                <div>
-                  <p className="executions-sidebar__mini-title">Estado por tarjeta</p>
+                <div className="status-stats">
+                  <div className="stat-item">
+                    <span className="stat-label">Duración</span>
+                    <span className="stat-value">{formatDuration(selectedExecution.totalDurationMs)}</span>
+                  </div>
+                  <div className="stat-actions">
+                    <button className="btn-secondary">Logs</button>
+                    <button className="btn-primary">Relanzar</button>
+                  </div>
+                </div>
+              </div>
+            )}
 
-                  <div className="execution-node-detail-list">
-                    {cards.map((card) => {
-                      const nodeState = executionNodeMap.get(card.id);
+            <div className="executions-canvas-container">
+              <div className="executions-canvas-wrapper">
+                <div className="executions-canvas-label">
+                  <span className="dot" />
+                  Workflow Map
+                </div>
+
+                <div
+                  className="executions-canvas-grid"
+                  style={{
+                    transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${canvasZoom})`,
+                    transformOrigin: 'top left',
+                  }}
+                >
+                  <svg className="executions-svg-layer">
+                    {edges.map((edge) => {
+                      const from = cards.find((card) => card.id === edge.from);
+                      const to = cards.find((card) => card.id === edge.to);
+                      if (!from || !to) return null;
+
+                      const startX = from.x + 95;
+                      const startY = from.y + 56;
+                      const endX = to.x + 95;
+                      const endY = to.y;
+                      const midY = (startY + endY) / 2;
+                      const path = `M ${startX} ${startY} C ${startX} ${midY}, ${endX} ${midY}, ${endX} ${endY}`;
+                      const stroke = getEdgeColor(edge);
 
                       return (
-                        <div key={card.id} className="execution-node-detail-card">
-                          <div className="execution-node-detail-card__top">
-                            <div>
-                              <p className="execution-node-detail-card__title">{card.title}</p>
-                              <p className="execution-node-detail-card__kind">{card.kind}</p>
-                            </div>
-
-                            <span className="execution-node-detail-card__badge">
-                              <span className={getNodeStatusDot(nodeState?.status)} />
-                              {getNodeStatusLabel(nodeState?.status)}
-                            </span>
-                          </div>
-
-                          <div className="execution-node-detail-card__grid">
-                            <div>
-                              <p className="execution-node-detail-card__label">Mensaje</p>
-                              <p>{nodeState?.message ?? '-'}</p>
-                            </div>
-                            <div>
-                              <p className="execution-node-detail-card__label">Duracion</p>
-                              <p>{formatDuration(nodeState?.durationMs)}</p>
-                            </div>
-                          </div>
-                        </div>
+                        <g key={edge.id}>
+                          <path d={path} stroke={stroke} strokeWidth="2" fill="none" />
+                          <circle cx={endX} cy={endY} r="4" fill="#fff" stroke={stroke} strokeWidth="1.5" />
+                        </g>
                       );
                     })}
-                  </div>
+                  </svg>
+
+                  {cards.map((card) => {
+                    const nodeState = executionNodeMap.get(card.id);
+                    return (
+                      <div
+                        key={card.id}
+                        className={getNodeTheme(card, nodeState)}
+                        style={{ left: card.x, top: card.y }}
+                      >
+                        <div className="canvas-node__header">
+                          <div className="canvas-node__title-group">
+                            <span
+                              className={`canvas-node__kind-dot ${card.kind === 'action'
+                                  ? 'canvas-node__kind-dot--action'
+                                  : card.kind === 'trigger'
+                                    ? 'canvas-node__kind-dot--trigger'
+                                    : 'canvas-node__kind-dot--connection'
+                                }`}
+                            />
+                            <span className="canvas-node__title">{card.title}</span>
+                          </div>
+                          <div>
+                            {nodeState?.status === 'running' ? (
+                              <Loader2 className="w-3 h-3 execution-spin node-icon node-icon--running" />
+                            ) : nodeState?.status === 'success' ? (
+                              <CheckCircle2 className="w-3 h-3 node-icon node-icon--success" />
+                            ) : nodeState?.status === 'error' ? (
+                              <XCircle className="w-3 h-3 node-icon node-icon--error" />
+                            ) : nodeState?.status === 'waiting' ? (
+                              <Clock3 className="w-3 h-3 node-icon node-icon--waiting" />
+                            ) : (
+                              <PauseCircle className="w-3 h-3 node-icon node-icon--idle" />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-            ) : (
-              <div className="execution-empty-state">
-                No hay una ejecucion seleccionada.
+            </div>
+          </div>
+        </main>
+
+        {/* --- Columna Derecha: Timeline y Detalle --- */}
+        <aside className="executions-detail-sidebar">
+          <div className="sidebar-header">
+            <h2 className="sidebar-title">Traza de Ejecución</h2>
+            <p className="sidebar-subtitle">Cronograma y detalles de nodos</p>
+          </div>
+
+          <div className="timeline-container">
+            {selectedExecution ? (
+              <div className="timeline-list">
+                {cards.map((card, index) => {
+                  const nodeState = executionNodeMap.get(card.id);
+                  const isLast = index === cards.length - 1;
+
+                  return (
+                    <div key={card.id} className="timeline-item">
+                      <div className="timeline-visual">
+                        <div className={`timeline-dot ${nodeState?.status ?? 'idle'}`}>
+                          {index + 1}
+                        </div>
+                        {!isLast && <div className="timeline-line" />}
+                      </div>
+                      <div className="timeline-content">
+                        <div className="timeline-card">
+                          <div className="timeline-card-header">
+                            <span className="timeline-card-title">{card.title}</span>
+                            <span className="timeline-card-duration">
+                              {formatDuration(nodeState?.durationMs)}
+                            </span>
+                          </div>
+                          <p className="timeline-card-msg">{nodeState?.message || 'Pendiente...'}</p>
+                          {nodeState?.status && (
+                            <div className={`timeline-card-status ${nodeState.status}`}>
+                              {nodeState.status}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
+            ) : (
+              <div className="empty-state">Selecciona una ejecución para ver el detalle.</div>
             )}
           </div>
         </aside>

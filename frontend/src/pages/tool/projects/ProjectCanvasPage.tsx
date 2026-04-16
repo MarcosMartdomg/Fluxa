@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useProject } from '../../../context/ProjectContext';
 import projectsService from '../../../services/projects.service';
+import ModeSwitcher from '../../../components/common/ModeSwitcher';
 
 type CardKind = 'trigger' | 'action' | 'connection';
 
@@ -1037,26 +1038,7 @@ const ProjectCanvasPage = () => {
           </aside>
         )}
 
-        <div className="pointer-events-none absolute left-1/2 top-4 z-20 -translate-x-1/2">
-          <div className="pointer-events-auto rounded-lg border border-gray-200 bg-white p-1 text-xs shadow-sm">
-            <button className="rounded-md bg-[#EEF0FF] px-4 py-1.5 font-semibold text-[#4B4EDB] shadow-inner">
-              Editor
-            </button>
-            <button
-              onClick={() => {
-                if (!id) return;
-                navigate(`/tool/projects/${id}/executions`);
-              }}
-              className="rounded-md px-4 py-1.5 text-gray-500 hover:bg-gray-50"
-            >
-              Ejecuciones
-            </button>
-          </div>
-          <div className="mt-2 flex items-center justify-center gap-1 text-[11px] font-semibold text-[#4B4EDB]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#6366F1]" />
-            Modo edicion activo
-          </div>
-        </div>
+        {id && <ModeSwitcher activeMode="editor" projectId={id} />}
 
         {bottomCard && (
           <button

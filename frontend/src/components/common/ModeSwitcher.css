@@ -1,0 +1,30 @@
+.mode-switcher-container {
+  @apply pointer-events-none fixed left-1/2 top-[72px] z-[60] -translate-x-1/2 flex flex-col items-center gap-2;
+}
+
+.mode-switcher-tabs {
+  @apply pointer-events-auto flex items-center p-1 bg-white border border-gray-200 rounded-xl shadow-lg;
+}
+
+.mode-switcher-tab {
+  @apply px-5 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer text-gray-500 hover:bg-gray-50;
+}
+
+.mode-switcher-tab.active {
+  @apply bg-[#EEF0FF] text-[#4B4EDB] shadow-inner;
+}
+
+.mode-switcher-label {
+  @apply flex items-center gap-1.5 text-[11px] font-bold text-[#4B4EDB] uppercase tracking-wider;
+}
+
+.mode-switcher-dot {
+  @apply w-1.5 h-1.5 rounded-full bg-[#6366F1] shadow-[0_0_8px_rgba(99,102,241,0.6)];
+  animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
+}
