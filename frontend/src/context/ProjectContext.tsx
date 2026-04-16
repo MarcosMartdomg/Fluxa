@@ -30,18 +30,8 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const data = await projectsService.getAll();
       setProjects(data);
       
-      // If no active project is set, or current active project is not in the list, set the first one
-      const storedActiveId = localStorage.getItem('activeProjectId');
-      const found = data.find((p: Project) => p.id === storedActiveId);
-      
-      if (found) {
-        setActiveProjectState(found);
-      } else if (data.length > 0) {
-        setActiveProjectState(data[0]);
-        localStorage.setItem('activeProjectId', data[0].id);
-      } else {
-        setActiveProjectState(null);
-      }
+      // Refresh the projects list without altering the active project state
+      // Selection is handled explicitly by the user or URL parameters in specific pages
     } catch (error) {
       console.error('Failed to fetch projects:', error);
     } finally {

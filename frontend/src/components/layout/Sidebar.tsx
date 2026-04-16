@@ -119,10 +119,13 @@ const Sidebar = ({ isExpanded }: SidebarProps) => {
             </span>
           </button>
           
-          <button className={clsx(
-            "flex items-center h-10 rounded-lg transition-all duration-200 group overflow-hidden w-full",
-            "text-gray-400 hover:bg-gray-100 hover:text-gray-700"
-          )}>
+          <Link 
+            to={PATHS.SETTINGS}
+            className={clsx(
+              "flex items-center h-10 rounded-lg transition-all duration-200 group overflow-hidden w-full",
+              "text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+            )}
+          >
             <div className="w-12 h-10 flex-shrink-0 flex items-center justify-center">
               <MoreHorizontal className="w-5 h-5 flex-shrink-0" />
             </div>
@@ -133,7 +136,7 @@ const Sidebar = ({ isExpanded }: SidebarProps) => {
             )}>
               More
             </span>
-          </button>
+          </Link>
         </nav>
       </div>
     </aside>

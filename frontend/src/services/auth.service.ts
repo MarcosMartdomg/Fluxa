@@ -32,6 +32,11 @@ const authService = {
   logout: () => {
     localStorage.removeItem('access_token');
   },
+
+  getProfile: async () => {
+    const response = await api.get('/users/me');
+    return response.data;
+  },
 };
 
 export default authService;

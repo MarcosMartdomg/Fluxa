@@ -1,9 +1,17 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { PATHS } from './paths';
+import { useAuth } from '../context/AuthContext';
 
 export const ProtectedRoute = () => {
-  // Placeholder for real auth check
-  const isAuthenticated = true; // TODO: Connect to auth state
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <Navigate to={PATHS.LOGIN} replace />;

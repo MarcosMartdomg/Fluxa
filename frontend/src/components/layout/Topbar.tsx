@@ -1,10 +1,11 @@
-import { HelpCircle, ChevronUp, ChevronDown, Menu, X, Check, Trash2, AlertTriangle } from 'lucide-react';
+import { HelpCircle, ChevronUp, ChevronDown, Menu, X, Check, Trash2, AlertTriangle, Settings, User, BookOpen, Command, Bug } from 'lucide-react';
 
 import { clsx } from 'clsx';
 import { useProject } from '../../context/ProjectContext';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
+import { useAuth } from '../../context/AuthContext';
 
 interface TopbarProps {
   onToggleSidebar: () => void;
@@ -14,13 +15,28 @@ interface TopbarProps {
 
 const Topbar = ({ onToggleSidebar, isExpanded, showSidebarToggle = true }: TopbarProps) => {
   const { projects, activeProject, setActiveProject, deleteProject } = useProject();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<{ id: string; name: string } | null>(null);
   const [deleteConfirmationText, setDeleteConfirmationText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const helpRef = useRef<HTMLDivElement>(null);
+
+  const userInitials = useMemo(() => {
+    if (!user) return '?';
+    if (user.name) {
+      const parts = user.name.trim().split(/\s+/);
+      if (parts.length > 1) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+      return user.name[0].toUpperCase();
+    }
+    return user.email[0].toUpperCase();
+  }, [user]);
 
   const handleDeleteProject = async () => {
     if (!projectToDelete || isDeleting) return;
@@ -44,6 +60,12 @@ const Topbar = ({ onToggleSidebar, isExpanded, showSidebarToggle = true }: Topba
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+      if (helpRef.current && !helpRef.current.contains(event.target as Node)) {
+        setIsHelpOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -94,7 +116,7 @@ const Topbar = ({ onToggleSidebar, isExpanded, showSidebarToggle = true }: Topba
               <ChevronDown className="w-3 h-3 -mt-1" />
             </div>
             <span className="text-sm font-medium truncate max-w-[120px]">
-              {activeProject ? activeProject.name : 'All Projects'}
+              {activeProject ? activeProject.name : 'Selecciona un proyecto'}
             </span>
           </button>
 
@@ -188,15 +210,90 @@ const Topbar = ({ onToggleSidebar, isExpanded, showSidebarToggle = true }: Topba
 
         <div className="h-6 w-px bg-gray-100 mx-1" />
         
-        <button className="text-gray-400 hover:text-gray-600 p-2 transition-colors">
-          <HelpCircle className="w-5 h-5" />
-        </button>
-        <button className="bg-white border border-gray-200 text-gray-700 font-semibold px-4 py-1.5 rounded-lg text-sm hover:bg-gray-50 transition-colors shadow-sm">
-          Upgrade
-        </button>
-        <button className="bg-[#6366F1] text-white font-bold px-4 py-1.5 rounded-lg text-sm hover:opacity-90 transition-all shadow-md shadow-indigo-100">
-          PRO
-        </button>
+        <div className="relative" ref={helpRef}>
+          <button 
+            onClick={() => setIsHelpOpen(!isHelpOpen)}
+            className="text-gray-400 hover:text-gray-600 p-2 transition-colors rounded-lg hover:bg-gray-50"
+          >
+            <HelpCircle className="w-5 h-5" />
+          </button>
+
+          {isHelpOpen && (
+            <div className="absolute top-full right-0 mt-2 w-56 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-50">
+              <div className="p-1">
+                <button
+                  onClick={() => setIsHelpOpen(false)}
+                  className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="w-4 h-4" />
+                    Documentation
+                  </div>
+                  <span className="text-[10px] bg-gray-100 text-gray-400 px-1 rounded font-medium">NEW</span>
+                </button>
+                <button
+                  onClick={() => setIsHelpOpen(false)}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                >
+                  <Command className="w-4 h-4" />
+                  Keyboard shortcuts
+                </button>
+                <button
+                  onClick={() => setIsHelpOpen(false)}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                >
+                  <Bug className="w-4 h-4" />
+                  Report a bug
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="h-6 w-px bg-gray-100 mx-1" />
+
+        <div className="relative" ref={userMenuRef}>
+          <button 
+            onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+            className="flex items-center gap-2 p-1 pl-2 hover:bg-gray-50 rounded-full transition-all border border-transparent hover:border-gray-100"
+          >
+            <div className="flex flex-col items-end mr-1 hidden sm:flex">
+              <span className="text-xs font-semibold text-gray-700 leading-none">{user?.name || 'User'}</span>
+              <span className="text-[10px] text-gray-400">{user?.email}</span>
+            </div>
+            <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 border-2 border-white shadow-sm font-bold text-xs uppercase">
+              {userInitials}
+            </div>
+          </button>
+
+          {isUserMenuOpen && (
+            <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-50">
+              <div className="p-1">
+                <button
+                  onClick={() => {
+                    setIsUserMenuOpen(false);
+                    navigate(PATHS.SETTINGS);
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                >
+                  <Settings className="w-4 h-4" />
+                  Settings
+                </button>
+                <div className="my-1 border-t border-gray-50" />
+                <button
+                  onClick={() => {
+                    setIsUserMenuOpen(false);
+                    logout();
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 transition-colors"
+                >
+                  <Plus className="w-4 h-4 rotate-45" />
+                  Log out
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {projectToDelete && (
