@@ -1075,8 +1075,8 @@ const ProjectCanvasPage = () => {
           </button>
         )}
 
-        <div className="pointer-events-none absolute left-4 top-1/2 z-30 -translate-y-1/2">
-          <div className="pointer-events-auto flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-2 shadow-xl">
+        <div className="pointer-events-none fixed bottom-8 left-1/2 z-30 -translate-x-1/2">
+          <div className="pointer-events-auto flex flex-row items-center gap-2 rounded-2xl border border-gray-200 bg-white p-2 shadow-xl">
             <button
               onClick={() => setActiveTool('pan')}
               className={`inline-flex h-10 w-10 items-center justify-center rounded-xl transition ${activeTool === 'pan'
@@ -1099,7 +1099,7 @@ const ProjectCanvasPage = () => {
               <MousePointer2 className="h-4 w-4" />
             </button>
 
-            <div className="h-px w-8 bg-gray-200" />
+            <div className="h-8 w-px bg-gray-200" />
 
             <button
               onClick={() => {
@@ -1123,7 +1123,7 @@ const ProjectCanvasPage = () => {
               <Link2 className="h-4 w-4" />
             </button>
 
-            <div className="mt-1 rounded-md bg-gray-100 px-2 py-1 text-[10px] font-semibold text-gray-600">
+            <div className="ml-1 rounded-md bg-gray-100 px-2 py-1 text-[10px] font-semibold text-gray-600">
               {Math.round(canvasZoom * 100)}%
             </div>
           </div>

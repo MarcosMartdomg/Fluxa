@@ -20,3 +20,13 @@
 .login-btn {
   @apply px-8 py-2.5 rounded-full bg-[#6366F1] text-white text-sm font-semibold hover:bg-[#5254e0] transition-all;
 }
+
+.github-link {
+  @apply flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200;
+  color: #666666;
+}
+
+.github-link:hover {
+  @apply bg-gray-50;
+  color: #6366F1;
+}

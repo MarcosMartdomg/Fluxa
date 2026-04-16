@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { Github } from 'lucide-react';
 import { PATHS } from '../../routes/paths';
 import './Navbar.css';
 
@@ -38,6 +39,15 @@ const Navbar: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-4">
+            <a
+              href="https://github.com/MarcosMartdomg/Fluxa"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="github-link"
+              aria-label="GitHub Repository"
+            >
+              <Github size={20} />
+            </a>
             <Link
               to={PATHS.LOGIN}
               className="login-btn"
