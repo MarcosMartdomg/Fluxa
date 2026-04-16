@@ -1,4 +1,4 @@
-import { HelpCircle, ChevronUp, ChevronDown, Menu, Check, Trash2, AlertTriangle } from 'lucide-react';
+import { HelpCircle, ChevronUp, ChevronDown, Menu, X, Check, Trash2, AlertTriangle } from 'lucide-react';
 
 import { clsx } from 'clsx';
 import { useProject } from '../../context/ProjectContext';
@@ -55,39 +55,30 @@ const Topbar = ({ onToggleSidebar, isExpanded, showSidebarToggle = true }: Topba
   return (
     <header className="h-14 bg-white border-b border-gray-100 flex items-center justify-between sticky top-0 z-30">
       <div className="flex items-center h-full">
-        {/* Left Section: Menu + Logo */}
+        {/* Fixed Hamburger/Menu Area (Zapier-style stability) */}
         <div className={clsx(
-          "flex items-center transition-all duration-300 h-full",
-          showSidebarToggle
-            ? isExpanded
-              ? "w-60 px-6 gap-3"
-              : "w-16 justify-center"
-            : "px-4 gap-3"
+          "flex items-center justify-center transition-all duration-300 h-full",
+          showSidebarToggle ? "w-16" : "px-4"
         )}>
           {showSidebarToggle && (
             <button 
               onClick={onToggleSidebar}
               className="p-2 hover:bg-gray-50 rounded-lg transition-colors text-gray-500"
             >
-              <Menu className="w-5 h-5" />
+              {isExpanded ? (
+                <X className="w-4 h-4" />
+              ) : (
+                <Menu className="w-4 h-4" />
+              )}
             </button>
-          )}
-          
-          {(isExpanded || !showSidebarToggle) && (
-             <Link to={PATHS.DASHBOARD} className="flex items-center gap-2 animate-in fade-in duration-300">
-              <img src="/images/logo_dashboard.png" alt="Fluxa" className="h-6" />
-              <span className="text-[10px] font-bold bg-[#D8D8FB] text-[#6366F1] px-1.5 py-0.5 rounded leading-none uppercase tracking-wide">FREE</span>
-            </Link>
           )}
         </div>
 
-        {/* Logo when collapsed (starts after the 64px sidebar/topbar section) */}
-        {!isExpanded && showSidebarToggle && (
-          <Link to={PATHS.DASHBOARD} className="flex items-center gap-2 animate-in fade-in duration-300 ml-2">
-            <img src="/images/logo_dashboard.png" alt="Fluxa" className="h-6" />
-            <span className="text-[10px] font-bold bg-[#D8D8FB] text-[#6366F1] px-1.5 py-0.5 rounded leading-none uppercase tracking-wide">FREE</span>
-          </Link>
-        )}
+        {/* Stable Branding Logo */}
+        <Link to={PATHS.DASHBOARD} className="flex items-center gap-2 animate-in fade-in duration-300 ml-2">
+          <img src="/images/logo_dashboard.png" alt="Fluxa" className="h-6" />
+          <span className="text-[10px] font-bold bg-[#D8D8FB] text-[#6366F1] px-1.5 py-0.5 rounded leading-none uppercase tracking-wide">FREE</span>
+        </Link>
       </div>
 
       <div className="flex items-center gap-3 px-4">
