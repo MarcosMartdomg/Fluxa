@@ -6,6 +6,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { PATHS } from '../../routes/paths';
 import { useAuth } from '../../context/AuthContext';
+import GlobalSearch from '../common/GlobalSearch';
 
 interface TopbarProps {
   onToggleSidebar: () => void;
@@ -72,12 +73,10 @@ const Topbar = ({ onToggleSidebar, isExpanded, showSidebarToggle = true }: Topba
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-
-
   return (
     <header className="h-14 bg-white border-b border-gray-100 flex items-center justify-between sticky top-0 z-30">
+      {/* LEFT: Branding & Project Selector */}
       <div className="flex items-center h-full">
-        {/* Fixed Hamburger/Menu Area (Zapier-style stability) */}
         <div className={clsx(
           "flex items-center justify-center transition-all duration-300 h-full",
           showSidebarToggle ? "w-16" : "px-4"
@@ -87,25 +86,18 @@ const Topbar = ({ onToggleSidebar, isExpanded, showSidebarToggle = true }: Topba
               onClick={onToggleSidebar}
               className="p-2 hover:bg-gray-50 rounded-lg transition-colors text-gray-500"
             >
-              {isExpanded ? (
-                <X className="w-4 h-4" />
-              ) : (
-                <Menu className="w-4 h-4" />
-              )}
+              {isExpanded ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
           )}
         </div>
 
-        {/* Stable Branding Logo */}
         <Link to={PATHS.DASHBOARD} className="flex items-center gap-2 animate-in fade-in duration-300 ml-2">
           <img src="/images/logo_dashboard.png" alt="Fluxa" className="h-6" />
           <span className="text-[10px] font-bold bg-[#D8D8FB] text-[#6366F1] px-1.5 py-0.5 rounded leading-none uppercase tracking-wide">FREE</span>
         </Link>
-      </div>
 
-      <div className="flex items-center gap-3 px-4">
+        <div className="h-6 w-px bg-gray-100 mx-4" />
 
-        {/* Project Selector Dropdown */}
         <div className="relative" ref={dropdownRef}>
           <button 
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -121,11 +113,10 @@ const Topbar = ({ onToggleSidebar, isExpanded, showSidebarToggle = true }: Topba
           </button>
 
           {isDropdownOpen && (
-            <div className="absolute top-full right-0 mt-2 w-64 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-50">
+            <div className="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-50">
               <div className="p-2 border-b border-gray-50 bg-gray-50/50">
                 <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider px-2">YOUR PROJECTS</span>
               </div>
-              
               <div className="max-h-[300px] overflow-y-auto p-1">
                 {projects.length === 0 ? (
                   <div className="px-3 py-4 text-center">
@@ -141,20 +132,14 @@ const Topbar = ({ onToggleSidebar, isExpanded, showSidebarToggle = true }: Topba
                       }}
                       className={clsx(
                         "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-all duration-200",
-                        !activeProject
-                          ? "bg-[#6366F1]/10 text-[#6366F1] font-semibold"
-                          : "text-gray-600 hover:bg-gray-50"
+                        !activeProject ? "bg-[#6366F1]/10 text-[#6366F1] font-semibold" : "text-gray-600 hover:bg-gray-50"
                       )}
                     >
-                      <span className="truncate">All Projects</span>
+                      <span>All Projects</span>
                       {!activeProject && <Check className="w-3.5 h-3.5" />}
                     </button>
-
                     {projects.map((project) => (
-                      <div
-                        key={project.id}
-                        className="mt-1 w-full rounded-lg border border-transparent transition-all"
-                      >
+                      <div key={project.id} className="mt-1 w-full rounded-lg border border-transparent">
                         <div className="flex items-center gap-1 pr-1">
                           <button
                             onClick={() => {
@@ -164,9 +149,7 @@ const Topbar = ({ onToggleSidebar, isExpanded, showSidebarToggle = true }: Topba
                             }}
                             className={clsx(
                               "flex-1 flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-all duration-200",
-                              activeProject?.id === project.id
-                                ? "bg-[#6366F1]/10 text-[#6366F1] font-semibold"
-                                : "text-gray-600 hover:bg-gray-50"
+                              activeProject?.id === project.id ? "bg-[#6366F1]/10 text-[#6366F1] font-semibold" : "text-gray-600 hover:bg-gray-50"
                             )}
                           >
                             <div className="flex items-center gap-3">
@@ -180,20 +163,12 @@ const Topbar = ({ onToggleSidebar, isExpanded, showSidebarToggle = true }: Topba
                             </div>
                             {activeProject?.id === project.id && <Check className="w-3.5 h-3.5" />}
                           </button>
-
                           <button
                             onClick={() => {
                               setProjectToDelete({ id: project.id, name: project.name });
-                              setDeleteConfirmationText('');
                               setIsDropdownOpen(false);
                             }}
-                            disabled={isDeleting}
-                            title="Delete project"
-                            className={clsx(
-                              "p-2 rounded-md transition-colors",
-                              "text-gray-400 hover:text-red-600 hover:bg-red-50",
-                              isDeleting && "opacity-50 cursor-not-allowed"
-                            )}
+                            className="p-2 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -205,11 +180,14 @@ const Topbar = ({ onToggleSidebar, isExpanded, showSidebarToggle = true }: Topba
               </div>
             </div>
           )}
-
         </div>
+      </div>
 
-        <div className="h-6 w-px bg-gray-100 mx-1" />
-        
+      {/* CENTER: Global Search */}
+      <GlobalSearch />
+
+      {/* RIGHT: Utilities */}
+      <div className="flex items-center gap-3 px-4">
         <div className="relative" ref={helpRef}>
           <button 
             onClick={() => setIsHelpOpen(!isHelpOpen)}
@@ -217,40 +195,23 @@ const Topbar = ({ onToggleSidebar, isExpanded, showSidebarToggle = true }: Topba
           >
             <HelpCircle className="w-5 h-5" />
           </button>
-
           {isHelpOpen && (
             <div className="absolute top-full right-0 mt-2 w-56 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-50">
               <div className="p-1">
-                <button
-                  onClick={() => setIsHelpOpen(false)}
-                  className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="w-4 h-4" />
-                    Documentation
-                  </div>
+                <button onClick={() => setIsHelpOpen(false)} className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50">
+                  <div className="flex items-center gap-2"><BookOpen className="w-4 h-4" />Documentation</div>
                   <span className="text-[10px] bg-gray-100 text-gray-400 px-1 rounded font-medium">NEW</span>
                 </button>
-                <button
-                  onClick={() => setIsHelpOpen(false)}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-                >
-                  <Command className="w-4 h-4" />
-                  Keyboard shortcuts
+                <button onClick={() => setIsHelpOpen(false)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50">
+                  <Command className="w-4 h-4" />Keyboard shortcuts
                 </button>
-                <button
-                  onClick={() => setIsHelpOpen(false)}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-                >
-                  <Bug className="w-4 h-4" />
-                  Report a bug
+                <button onClick={() => setIsHelpOpen(false)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50">
+                  <Bug className="w-4 h-4" />Report a bug
                 </button>
               </div>
             </div>
           )}
         </div>
-
-        <div className="h-6 w-px bg-gray-100 mx-1" />
 
         <div className="relative" ref={userMenuRef}>
           <button 
@@ -261,34 +222,19 @@ const Topbar = ({ onToggleSidebar, isExpanded, showSidebarToggle = true }: Topba
               <span className="text-xs font-semibold text-gray-700 leading-none">{user?.name || 'User'}</span>
               <span className="text-[10px] text-gray-400">{user?.email}</span>
             </div>
-            <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 border-2 border-white shadow-sm font-bold text-xs uppercase">
+            <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 border-2 border-white shadow-sm font-bold text-xs uppercase text-white">
               {userInitials}
             </div>
           </button>
-
           {isUserMenuOpen && (
             <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-50">
               <div className="p-1">
-                <button
-                  onClick={() => {
-                    setIsUserMenuOpen(false);
-                    navigate(PATHS.SETTINGS);
-                  }}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-                >
-                  <Settings className="w-4 h-4" />
-                  Settings
+                <button onClick={() => { setIsUserMenuOpen(false); navigate(PATHS.SETTINGS); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50">
+                  <Settings className="w-4 h-4" />Settings
                 </button>
                 <div className="my-1 border-t border-gray-50" />
-                <button
-                  onClick={() => {
-                    setIsUserMenuOpen(false);
-                    logout();
-                  }}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 transition-colors"
-                >
-                  <Plus className="w-4 h-4 rotate-45" />
-                  Log out
+                <button onClick={() => { setIsUserMenuOpen(false); logout(); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50">
+                  <X className="w-4 h-4 rotate-45" />Log out
                 </button>
               </div>
             </div>
@@ -300,21 +246,13 @@ const Topbar = ({ onToggleSidebar, isExpanded, showSidebarToggle = true }: Topba
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 px-4">
           <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl">
             <div className="mb-4 flex items-start gap-3">
-              <div className="mt-0.5 rounded-xl bg-red-100 p-2 text-red-600">
-                <AlertTriangle className="h-5 w-5" />
-              </div>
+              <div className="mt-0.5 rounded-xl bg-red-100 p-2 text-red-600"><AlertTriangle className="h-5 w-5" /></div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">Delete project?</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  This action cannot be undone. Type the project name to confirm deletion.
-                </p>
+                <p className="mt-1 text-sm text-gray-500">This action cannot be undone. Type the project name to confirm deletion.</p>
               </div>
             </div>
-
-            <div className="mb-5 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
-              {projectToDelete.name}
-            </div>
-
+            <div className="mb-5 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">{projectToDelete.name}</div>
             <input
               value={deleteConfirmationText}
               onChange={(event) => setDeleteConfirmationText(event.target.value)}
@@ -322,22 +260,9 @@ const Topbar = ({ onToggleSidebar, isExpanded, showSidebarToggle = true }: Topba
               className="mb-6 h-10 w-full rounded-lg border border-gray-200 px-3 text-sm outline-none transition-colors focus:border-[#6366F1]"
               autoFocus
             />
-
             <div className="flex justify-end gap-2">
-              <button
-                onClick={() => {
-                  setProjectToDelete(null);
-                  setDeleteConfirmationText('');
-                }}
-                className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteProject}
-                disabled={isDeleting || deleteConfirmationText.trim() !== projectToDelete.name}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
-              >
+              <button onClick={() => { setProjectToDelete(null); setDeleteConfirmationText(''); }} className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
+              <button onClick={handleDeleteProject} disabled={isDeleting || deleteConfirmationText.trim() !== projectToDelete.name} className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">
                 {isDeleting ? 'Deleting...' : 'Delete project'}
               </button>
             </div>
