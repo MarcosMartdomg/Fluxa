@@ -30,7 +30,7 @@
 }
 
 .uc-value-text {
-    @apply text-3xl md:text-4xl font-medium text-gray-900 leading-[1.4] tracking-tight text-center;
+    @apply text-3xl md:text-4xl font-medium text-gray-900 leading-[1.4] tracking-tight text-center max-w-3xl mx-auto;
 }
 
 .text-highlight {
@@ -43,7 +43,7 @@
 }
 
 .uc-grid {
-    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6;
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8;
 }
 
 .uc-card {

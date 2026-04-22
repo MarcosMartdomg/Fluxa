@@ -31,12 +31,10 @@ const HeroSection: React.FC = () => (
 const ValueSection: React.FC = () => (
   <section className="uc-value-section">
     <div className="f-container">
-      <div className="max-w-4xl mx-auto text-center">
-        <h2 className="uc-value-text">
-          Diseñado para <span className="text-highlight">automatizaciones</span> basadas en <span className="text-highlight">eventos</span>, 
-          permitiendo <span className="text-highlight">conectar sistemas</span> complejos y <span className="text-highlight">simplificar procesos</span> críticos.
-        </h2>
-      </div>
+      <h2 className="uc-value-text">
+        Diseñado para <span className="text-highlight">automatizaciones</span> basadas en <span className="text-highlight">eventos</span>, 
+        permitiendo <span className="text-highlight">conectar sistemas</span> complejos y <span className="text-highlight">simplificar procesos</span> críticos.
+      </h2>
     </div>
   </section>
 );
