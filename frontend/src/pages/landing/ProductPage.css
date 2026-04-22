@@ -2,94 +2,120 @@
     @apply min-h-screen bg-white;
 }
 
-.container-xl {
-    @apply max-w-[1440px] mx-auto px-6 sm:px-8 lg:px-16 xl:px-24;
+/* Secondary Page Standard Container (Synced with Features) */
+.f-container {
+    @apply max-w-6xl mx-auto px-6 lg:px-8;
 }
 
 /* --- Hero Section --- */
 .product-hero {
-    @apply pt-40 pb-20 bg-gray-50/30;
+    @apply pt-32 pb-16 bg-white overflow-hidden;
 }
 
-.product-badge {
-    @apply px-4 py-1 rounded-full bg-[#6366F1]/10 text-[#6366F1] font-bold text-xs tracking-wider mb-6;
+.brand-badge {
+    @apply text-[#6366F1] font-bold text-[18px] tracking-[0.05em] uppercase mb-6 block;
 }
 
-.product-title {
-    @apply text-5xl md:text-6xl font-medium text-gray-900 leading-[1.1] mb-8 tracking-tight;
+.hero-title {
+    @apply text-[40px] md:text-[50px] font-medium text-gray-900 leading-[1.1] mb-6 tracking-tight;
 }
 
-.product-subtitle {
-    @apply text-lg text-gray-500 max-w-2xl leading-relaxed;
+.hero-description {
+    @apply text-[17px] text-gray-500 max-w-2xl leading-relaxed;
 }
 
-/* --- Event Section (Purple Highlight) --- */
+/* --- Visual Placeholder (Hero Right) --- */
+.hero-visual-placeholder {
+    @apply w-full h-auto min-h-[350px] bg-zinc-50 border border-dashed border-zinc-300 rounded-xl flex items-center justify-center;
+}
+
+/* --- Event Section (Synced with Features Monitor) --- */
 .event-section {
-    @apply py-32 bg-[#6366F1] text-white;
+    @apply py-24 bg-[#6366F1] text-white overflow-hidden;
 }
 
-.event-title {
-    @apply text-4xl md:text-5xl font-medium mb-6 tracking-tight;
+.monitor-badge {
+    @apply text-[18px] font-bold text-white uppercase tracking-wider mb-6 block opacity-80;
+}
+
+.section-heading-lg {
+    @apply text-4xl md:text-[42px] font-medium text-white leading-[1.2] mb-8 tracking-tight;
 }
 
 .event-description {
-    @apply text-lg text-white/80 max-w-3xl leading-relaxed;
+    @apply text-lg text-white/80 leading-relaxed max-w-xl mb-12;
 }
 
-/* --- Process Flow Section --- */
+.event-placeholder-visual {
+    @apply w-full h-auto min-h-[400px] bg-white/10 rounded-2xl border border-white/20 flex items-center justify-center;
+}
+
+/* --- Process Section (Synced with Features Blocks) --- */
 .process-section {
-    @apply py-32 bg-white;
+    @apply py-20 bg-gray-50/80 border-y border-gray-100;
 }
 
 .process-grid {
-    @apply grid grid-cols-1 md:grid-cols-5 gap-8;
+    @apply grid grid-cols-1 md:grid-cols-5 gap-6;
 }
 
 .process-card {
-    @apply flex flex-col items-center text-center p-8 rounded-2xl bg-white border border-gray-100 shadow-sm transition-all hover:shadow-md hover:-translate-y-1;
+    @apply p-6 rounded-xl bg-white border border-gray-100 shadow-sm transition-all hover:shadow-md;
 }
 
 .process-num {
-    @apply w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mb-6;
+    @apply w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mb-4 text-base;
 }
 
 .process-name {
-    @apply text-lg font-bold text-gray-900 mb-2;
+    @apply text-base font-extrabold text-gray-900 mb-2;
 }
 
 .process-desc {
-    @apply text-sm text-gray-500 leading-snug;
+    @apply text-[13px] font-medium text-[#6F6F6F] leading-snug;
 }
 
-/* --- Components Grid Section --- */
+/* --- Components Grid Section (Synced with Features Grid) --- */
 .components-section {
-    @apply py-32 bg-gray-50/50;
+    @apply py-24 bg-white overflow-hidden;
 }
 
 .section-label {
-    @apply text-3xl font-bold text-gray-900 mb-16 text-center;
+    @apply text-[32px] font-medium text-gray-900 mb-12 text-center;
 }
 
 .components-grid {
-    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8;
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5;
 }
 
 .comp-card {
-    @apply p-10 bg-white rounded-2xl border border-gray-100 shadow-sm hover:border-[#6366F1]/30 transition-colors;
+    @apply p-6 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col items-start gap-3;
 }
 
 .comp-title {
-    @apply text-xl font-bold text-gray-900 mb-4;
+    @apply text-lg font-bold text-gray-900;
 }
 
 .comp-desc {
-    @apply text-sm text-gray-500 leading-relaxed;
+    @apply text-sm text-gray-500 leading-relaxed mb-1;
 }
 
-/* --- Mobile Responsive Pacing --- */
+.comp-features {
+    @apply flex flex-col gap-1.5;
+}
+
+.comp-feature-item {
+    @apply text-xs text-gray-400 flex items-center gap-2;
+}
+
+.comp-feature-item::before {
+    content: "•";
+    @apply text-[#6366F1] font-bold;
+}
+
+/* --- Responsive Pacing --- */
 @media (max-width: 768px) {
-    .product-hero { @apply pt-32 pb-12; }
-    .event-section { @apply py-20; }
-    .process-section { @apply py-20; }
-    .components-section { @apply py-20; }
+    .product-hero { @apply pt-24 pb-12; }
+    .event-section, .components-section { @apply py-16; }
+    .process-section { @apply py-12; }
 }

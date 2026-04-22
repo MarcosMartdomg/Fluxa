@@ -5,17 +5,24 @@ import './FeaturesPage.css';
 
 const HeroSection: React.FC = () => (
   <section className="features-hero">
-    <div className="container-xl">
-      <div className="flex flex-col items-center text-center">
-        <span className="brand-badge">FEATURES</span>
-        <h1 className="hero-title-main">
-          Potencia tu flujo de trabajo <br />
-          con herramientas avanzadas.
-        </h1>
-        <p className="hero-desc-main">
-          Fluxa ofrece un conjunto de funcionalidades diseñadas para automatizar 
-          cada aspecto de tu ecosistema tecnológico, desde webhooks hasta procesos programados.
-        </p>
+    <div className="f-container">
+      <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-16 items-center">
+        <div className="flex flex-col items-start text-left">
+          <span className="brand-badge">FEATURES</span>
+          <h1 className="hero-title-main">
+            Potencia tu flujo de trabajo <br />
+            con herramientas avanzadas.
+          </h1>
+          <p className="hero-desc-main">
+            Fluxa ofrece un conjunto de funcionalidades diseñadas para automatizar 
+            cada aspecto de tu ecosistema tecnológico, desde webhooks hasta procesos programados.
+          </p>
+        </div>
+        <div className="hidden lg:block">
+          <div className="f-placeholder-visual min-h-[350px]">
+            <span className="text-gray-400 text-sm">Visual de Features</span>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -31,7 +38,7 @@ const FunctionalBlocks: React.FC = () => {
 
   return (
     <section className="functional-blocks">
-      <div className="container-xl">
+      <div className="f-container">
         <div className="blocks-grid">
           {features.map((feat, index) => (
             <div key={index} className="block-item">
@@ -48,10 +55,10 @@ const FunctionalBlocks: React.FC = () => {
 
 const MonitorSection: React.FC = () => (
   <section className="f-monitor-section">
-    <div className="container-xl">
+    <div className="f-container">
       <div className="grid lg:grid-cols-2 gap-20 items-center">
         <div className="f-monitor-text">
-          <h2 className="section-title-f text-left">Monitorización <br /> de estados.</h2>
+          <h2 className="section-title-f">Monitorización <br /> de estados.</h2>
           <p className="section-desc-f">
             Controla el ciclo de vida de cada ejecución. Fluxa registra cada cambio de estado, 
             permitiendo detectar errores y optimizar el rendimiento de forma proactiva.
@@ -61,7 +68,7 @@ const MonitorSection: React.FC = () => (
             <p className="stat-l">de fiabilidad en el procesamiento de eventos.</p>
           </div>
         </div>
-        <div className="f-placeholder-visual rounded-2xl bg-gray-100 flex items-center justify-center min-h-[400px]">
+        <div className="f-placeholder-visual">
           <span className="text-gray-400">Visualización de estados</span>
         </div>
       </div>
@@ -71,13 +78,13 @@ const MonitorSection: React.FC = () => (
 
 const BreakdownSection: React.FC = () => (
   <section className="f-breakdown-section">
-    <div className="container-xl">
+    <div className="f-container">
       <div className="grid lg:grid-cols-2 gap-20 items-center">
-        <div className="f-placeholder-visual order-2 lg:order-1 rounded-2xl bg-[#6366F1]/5 flex items-center justify-center min-h-[400px]">
-          <span className="text-[#6366F1]/40">Detalle de componentes</span>
+        <div className="f-placeholder-visual order-2 lg:order-1">
+          <span className="text-gray-300">Detalle de componentes</span>
         </div>
         <div className="f-breakdown-text order-1 lg:order-2">
-          <h2 className="section-title-f text-left">Todo lo que <br /> necesitas en uno.</h2>
+          <h2 className="section-title-f">Todo lo que <br /> necesitas en uno.</h2>
           <p className="section-desc-f">
             Nuestra plataforma integra las mejores tecnologías para garantizar que 
             tus workflows se ejecuten sin problemas.

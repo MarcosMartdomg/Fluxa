@@ -5,20 +5,24 @@ import './UseCasesPage.css';
 
 const HeroSection: React.FC = () => (
   <section className="uc-hero">
-    <div className="container-xl">
-      <div className="flex flex-col items-center text-center">
-        <span className="brand-badge">USE CASES</span>
-        <h1 className="uc-title">
-          Soluciones para cada desafío <br />
-          de automatización.
-        </h1>
-        <p className="uc-desc">
-          Explora cómo Fluxa puede transformar la operativa de tu equipo mediante 
-          conectividad inteligente y flujos de trabajo sin fricciones.
-        </p>
-        <button className="cta-button-primary mt-8">
-          Descubre
-        </button>
+    <div className="f-container">
+      <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-16 items-center">
+        <div className="flex flex-col items-start text-left">
+          <span className="brand-badge">USE CASES</span>
+          <h1 className="uc-title">
+            Soluciones para cada desafío <br />
+            de automatización.
+          </h1>
+          <p className="uc-desc">
+            Explora cómo Fluxa puede transformar la operativa de tu equipo mediante 
+            conectividad inteligente y flujos de trabajo sin fricciones.
+          </p>
+        </div>
+        <div className="hidden lg:block">
+          <div className="w-full h-auto min-h-[350px] bg-zinc-50 border border-dashed border-zinc-300 rounded-xl flex items-center justify-center">
+            <span className="text-zinc-400 font-medium text-sm">Visual de Casos de Uso</span>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -26,7 +30,7 @@ const HeroSection: React.FC = () => (
 
 const ValueSection: React.FC = () => (
   <section className="uc-value-section">
-    <div className="container-xl">
+    <div className="f-container">
       <div className="max-w-4xl mx-auto text-center">
         <h2 className="uc-value-text">
           Diseñado para <span className="text-highlight">automatizaciones</span> basadas en <span className="text-highlight">eventos</span>, 
@@ -47,7 +51,7 @@ const UseCaseGrid: React.FC = () => {
 
   return (
     <section className="uc-grid-section">
-      <div className="container-xl">
+      <div className="f-container">
         <div className="uc-grid">
           {cases.map((uc, index) => (
             <div key={index} className="uc-card">
@@ -63,9 +67,9 @@ const UseCaseGrid: React.FC = () => {
 
 const FeaturedBottomSection: React.FC = () => (
   <section className="uc-featured-bottom">
-    <div className="container-xl">
+    <div className="f-container">
       <div className="grid lg:grid-cols-2 gap-20 items-center">
-        <div className="uc-featured-visual rounded-2xl bg-white/10 flex items-center justify-center min-h-[450px]">
+        <div className="uc-featured-visual">
           <span className="text-white/40">Visualización de impacto</span>
         </div>
         <div className="uc-featured-text text-white">
@@ -85,7 +89,7 @@ const UseCasesPage: React.FC = () => {
   return (
     <div className="uc-container">
       <Navbar />
-      <main>
+      <main className="pt-20">
         <HeroSection />
         <ValueSection />
         <UseCaseGrid />

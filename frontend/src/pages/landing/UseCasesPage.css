@@ -2,47 +2,52 @@
     @apply min-h-screen bg-white;
 }
 
-.container-xl {
-    @apply max-w-[1440px] mx-auto px-6 sm:px-8 lg:px-16 xl:px-24;
+/* Secondary Page Standard Container (Synced with Features) */
+.f-container {
+    @apply max-w-6xl mx-auto px-6 lg:px-8;
 }
 
 /* --- Hero Section --- */
 .uc-hero {
-    @apply pt-40 pb-20 bg-gray-50/20;
+    @apply pt-32 pb-16 bg-white overflow-hidden;
+}
+
+.brand-badge {
+    @apply text-[#6366F1] font-bold text-[18px] tracking-[0.05em] uppercase mb-6 block;
 }
 
 .uc-title {
-    @apply text-5xl md:text-6xl font-medium text-gray-900 leading-[1.1] mb-8 tracking-tight;
+    @apply text-[40px] md:text-[50px] font-medium text-gray-900 leading-[1.1] mb-6 tracking-tight;
 }
 
 .uc-desc {
-    @apply text-lg text-gray-500 max-w-2xl leading-relaxed;
+    @apply text-[17px] text-gray-500 max-w-2xl leading-relaxed;
 }
 
-/* --- Value Section --- */
+/* --- Value Section (Synced with Features Blocks/Strips) --- */
 .uc-value-section {
-    @apply py-32 bg-white;
+    @apply py-20 bg-gray-50/80 border-y border-gray-100;
 }
 
 .uc-value-text {
-    @apply text-3xl md:text-4xl font-medium text-gray-900 leading-[1.4] tracking-tight;
+    @apply text-3xl md:text-4xl font-medium text-gray-900 leading-[1.4] tracking-tight text-center;
 }
 
 .text-highlight {
     @apply text-[#6366F1] font-bold;
 }
 
-/* --- Use Case Grid --- */
+/* --- Use Case Grid (Synced with Features Grid) --- */
 .uc-grid-section {
-    @apply py-24 bg-gray-50/50;
+    @apply py-24 bg-white overflow-hidden;
 }
 
 .uc-grid {
-    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8;
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6;
 }
 
 .uc-card {
-    @apply p-8 rounded-2xl bg-white border border-gray-100 shadow-sm transition-all hover:shadow-md hover:-translate-y-1;
+    @apply p-8 rounded-xl bg-white border border-gray-100 shadow-sm transition-all hover:shadow-md;
 }
 
 .uc-card-title {
@@ -53,13 +58,13 @@
     @apply text-sm text-gray-500 leading-relaxed;
 }
 
-/* --- Featured Bottom Section --- */
+/* --- Featured Bottom Section (Synced with Features Alternate) --- */
 .uc-featured-bottom {
-    @apply py-32 bg-[#6366F1];
+    @apply py-24 bg-[#6366F1] text-white overflow-hidden;
 }
 
 .uc-featured-title {
-    @apply text-4xl md:text-5xl font-medium mb-8 tracking-tight;
+    @apply text-4xl md:text-[42px] font-medium mb-8 tracking-tight leading-[1.2];
 }
 
 .uc-featured-desc {
@@ -67,13 +72,12 @@
 }
 
 .uc-featured-visual {
-    @apply border border-white/10;
+    @apply w-full h-auto min-h-[450px] bg-white/10 rounded-2xl border border-white/20 flex items-center justify-center;
 }
 
-/* --- Mobile Responsive Pacing --- */
+/* --- Responsive Pacing --- */
 @media (max-width: 768px) {
-    .uc-hero { @apply pt-32 pb-12; }
-    .uc-value-section { @apply py-20; }
-    .uc-grid-section { @apply py-16; }
-    .uc-featured-bottom { @apply py-20; }
+    .uc-hero { @apply pt-24 pb-12; }
+    .uc-value-section { @apply py-12; }
+    .uc-grid-section, .uc-featured-bottom { @apply py-16; }
 }
