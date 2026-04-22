@@ -1,0 +1,55 @@
+.workflow-builder-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    background-color: #F9FAFB;
+}
+
+.workflow-builder-content {
+    flex-grow: 1;
+    display: flex;
+    overflow: hidden;
+    height: 100%;
+}
+
+.react-flow-wrapper {
+    flex-grow: 1;
+    height: 100%;
+    position: relative;
+    background-color: #F3F3F5;
+}
+
+/* React Flow Theming to match Fluxa */
+.react-flow__node {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: box-shadow 0.2s ease-in-out;
+}
+
+.react-flow__node:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.react-flow__controls {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid #E5E7EB !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+}
+
+.react-flow__controls-button {
+    border-bottom: 1px solid #F3F4F6 !important;
+    background: #ffffff !important;
+    fill: #4B5563 !important;
+}
+
+.react-flow__controls-button:hover {
+    background: #F9FAFB !important;
+}
+
+.react-flow__minimap {
+    background-color: #ffffff !important;
+    border: 1px solid #E5E7EB !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+}

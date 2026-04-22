@@ -14,4 +14,5 @@ export const PATHS = {
   LOGS: '/tool/logs',
   SETTINGS: '/tool/settings',
   CONTACT: '/contact',
+  WORKFLOW_BUILDER: '/tool/builder',
 };
