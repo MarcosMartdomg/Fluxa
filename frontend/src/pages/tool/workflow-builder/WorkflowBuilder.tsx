@@ -12,6 +12,7 @@ import {
   BackgroundVariant,
   useReactFlow,
 } from '@xyflow/react';
+import { Zap, Play, Settings } from 'lucide-react';
 
 import WorkflowSidebar from '../../../components/workflow/WorkflowSidebar';
 import NodeEditorPanel from '../../../components/workflow/NodeEditorPanel';
@@ -184,10 +185,134 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({ projectId }) => {
     };
   }, []);
 
+  const [isExecuting, setIsExecuting] = useState(false);
+
+  const runWorkflow = async () => {
+    if (isExecuting) return;
+    setIsExecuting(true);
+
+    // Reset all nodes to idle
+    setNodes(nds => nds.map(n => ({ ...n, data: { ...n, execStatus: 'idle' } })));
+
+    // Sequential simulation
+    // 1. Start with Trigger
+    const trigger = nodes.find(n => n.type === 'trigger');
+    if (!trigger) {
+      setIsExecuting(false);
+      return;
+    }
+
+    const setNodeStatus = (nodeId: string, status: 'loading' | 'success' | 'error', result?: any) => {
+      setNodes(nds => nds.map(n => 
+        n.id === nodeId ? { 
+          ...n, 
+          data: { 
+            ...n.data, 
+            execStatus: status,
+            execResult: result || (status === 'success' ? { status: 'OK', timestamp: new Date().toISOString() } : null)
+          } 
+        } : n
+      ));
+    };
+
+    // Execute Trigger
+    setNodeStatus(trigger.id, 'loading');
+    await new Promise(r => setTimeout(r, 1000));
+    setNodeStatus(trigger.id, 'success', { event: 'webhook_received', body: { name: 'Marcos', email: 'marcos@fluxa.io' } });
+
+    // Follow edges
+    let currentNodeId = trigger.id;
+    let hasNext = true;
+
+    while (hasNext) {
+      const edge = edges.find(e => e.source === currentNodeId);
+      if (!edge) {
+        hasNext = false;
+        break;
+      }
+
+      const nextNode = nodes.find(n => n.id === edge.target);
+      // Skip addNodes in execution flow
+      if (!nextNode || nextNode.type === 'addNode') {
+        // If it's an addNode, check if there's something after it
+        const afterAddEdge = edges.find(e => e.source === edge.target);
+        if (afterAddEdge) {
+          currentNodeId = afterAddEdge.source;
+          continue;
+        } else {
+          hasNext = false;
+          break;
+        }
+      }
+
+      setNodeStatus(nextNode.id, 'loading');
+      await new Promise(r => setTimeout(r, 1500));
+      
+      // Simulate variable resolution for the UI
+      let resolvedResult: any = { status: 'OK' };
+      const config = nextNode.data.config || {};
+      const hasVariables = Object.values(config).some(v => typeof v === 'string' && v.includes('{{'));
+      
+      if (hasVariables) {
+        resolvedResult.resolvedData = "Variables procesadas: 'Marcos' <marcos@fluxa.io>";
+      }
+
+      setNodeStatus(nextNode.id, 'success', resolvedResult);
+      currentNodeId = nextNode.id;
+    }
+
+    setIsExecuting(false);
+  };
+
   return (
-    <div className="workflow-builder-container">
-      <div className="workflow-builder-content">
-        <WorkflowSidebar onAddNode={() => setIsSelectorOpen(true)} />
+    <div className="workflow-builder-container flex flex-col h-screen bg-[#F8F9FB] overflow-hidden">
+      {/* Top Navigation Bar */}
+      <nav className="h-16 bg-white border-b border-gray-200 px-8 flex items-center justify-between z-30 shadow-sm shrink-0">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-100">
+            <Zap className="text-white" size={20} fill="currentColor" />
+          </div>
+          <div>
+            <h1 className="text-sm font-black text-gray-900 uppercase tracking-widest leading-none mb-1">Workflow Builder</h1>
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Proyecto: Fluxa Automation</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-[10px] font-bold text-gray-500">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+            Auto-guardado activo
+          </div>
+          
+          {isExecuting ? (
+            <button 
+              onClick={() => setIsExecuting(false)}
+              className="px-6 py-2 bg-rose-50 text-rose-600 border border-rose-200 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:bg-rose-100 transition-all shadow-sm"
+            >
+              <div className="w-2 h-2 bg-rose-500 rounded-full animate-ping" />
+              Detener
+            </button>
+          ) : (
+            <button 
+              onClick={runWorkflow}
+              className="px-6 py-2 bg-indigo-600 text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 active:scale-95 group"
+            >
+              <Play size={14} fill="currentColor" className="group-hover:scale-110 transition-transform" />
+              Ejecutar Flujo
+            </button>
+          )}
+
+          <button className="p-2 hover:bg-gray-100 rounded-xl transition-colors text-gray-400">
+            <Settings size={20} />
+          </button>
+        </div>
+      </nav>
+
+      <div className="workflow-builder-content flex flex-1 overflow-hidden relative">
+        <WorkflowSidebar 
+          activeNode={selectedNode}
+          onAddNode={() => setIsSelectorOpen(true)} 
+        />
         
         <div className="react-flow-wrapper cursor-grab active:cursor-grabbing">
           <ReactFlow

@@ -10,6 +10,8 @@ export interface WorkflowNodeData {
   provider?: string;
   actionKey?: string;
   config?: Record<string, any>;
+  // Execution state
+  execStatus?: 'idle' | 'loading' | 'success' | 'error';
 }
 
 export type FluxaNode = Node<WorkflowNodeData, NodeType>;

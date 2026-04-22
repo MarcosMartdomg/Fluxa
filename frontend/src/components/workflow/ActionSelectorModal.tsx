@@ -4,8 +4,13 @@ import {
   Clock, Code, MessageSquare, Database, ArrowRight, ChevronLeft
 } from 'lucide-react';
 import { NodeType } from '../../types/workflow';
-import { INTEGRATION_REGISTRY, Provider, ActionMetadata } from '../../types/integration';
+import { Provider, ActionMetadata } from '../../types/integration';
+import { INTEGRATION_REGISTRY } from '../../constants/integrations';
 import { GOOGLE_SPREADSHEET_RESOURCE } from '../../integrations/google/spreadsheet';
+import { MICROSOFT_EXCEL_RESOURCE } from '../../integrations/microsoft/excel';
+import { MICROSOFT_OUTLOOK_RESOURCE } from '../../integrations/microsoft/outlook';
+import { SLACK_RESOURCE } from '../../integrations/chat/slack';
+import { DISCORD_RESOURCE } from '../../integrations/chat/discord';
 
 // Simplified internal actions for core logic
 const CORE_ACTIONS = [
@@ -65,8 +70,17 @@ const ActionSelectorModal: React.FC<ActionSelectorModalProps> = ({ isOpen, onClo
   const renderProviderActions = () => {
     if (!selectedProvider) return null;
     const provider = INTEGRATION_REGISTRY[selectedProvider];
-    // For MVP, we only have Google Spreadsheet real data
-    const actions = selectedProvider === 'google' ? GOOGLE_SPREADSHEET_RESOURCE.actions : [];
+    // For MVP, we switch actions based on provider
+    let actions: ActionMetadata[] = [];
+    if (selectedProvider === 'google') {
+      actions = GOOGLE_SPREADSHEET_RESOURCE.actions;
+    } else if (selectedProvider === 'microsoft') {
+      actions = [...MICROSOFT_EXCEL_RESOURCE.actions, ...MICROSOFT_OUTLOOK_RESOURCE.actions];
+    } else if (selectedProvider === 'slack') {
+      actions = SLACK_RESOURCE.actions;
+    } else if (selectedProvider === 'discord') {
+      actions = DISCORD_RESOURCE.actions;
+    }
 
     return (
       <div className="flex-1 flex flex-col min-h-0">

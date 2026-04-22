@@ -1,11 +1,13 @@
 import { Handle, Position, NodeProps, Node, useReactFlow } from '@xyflow/react';
-import { Zap, Play, Split, Clock, Trash2, Edit3, Plus } from 'lucide-react';
+import { Zap, Play, Split, Clock, Trash2, Edit3, Plus, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 
 // --- Shared Styles & Types ---
 export type NodeData = {
   label: string;
   sublabel?: string;
   icon?: React.ReactNode;
+  execStatus?: 'idle' | 'loading' | 'success' | 'error';
+  execResult?: any;
 };
 
 const nodeBaseStyles = "w-[180px] md:w-[220px] max-w-[240px] bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden transition-all group relative";
@@ -14,6 +16,35 @@ const nodeHeaderStyles = "px-3 py-2 flex items-center gap-2 border-b border-gray
 const iconWrapperStyles = "w-7 h-7 rounded-md flex items-center justify-center text-white shrink-0";
 const actionButtonStyles = "p-1.5 hover:bg-gray-100 rounded-md text-gray-400 hover:text-gray-600 transition-colors";
 const handleStyles = "w-3 h-3 bg-white border-2 border-gray-300 hover:border-indigo-500 hover:scale-125 transition-transform z-10";
+
+// --- Execution Status Badge ---
+const ExecutionStatusBadge = ({ status, result }: { status?: 'idle' | 'loading' | 'success' | 'error', result?: any }) => {
+  if (!status || status === 'idle') return null;
+
+  const config = {
+    loading: { icon: <Loader2 size={10} className="animate-spin" />, color: 'bg-indigo-50 text-indigo-600 border-indigo-100' },
+    success: { icon: <CheckCircle2 size={10} />, color: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
+    error: { icon: <AlertCircle size={10} />, color: 'bg-rose-50 text-rose-600 border-rose-100' },
+  }[status];
+
+  return (
+    <div className={`absolute -top-2 -right-2 flex items-center gap-1.5 px-2 py-1 rounded-full border shadow-sm z-[60] animate-in zoom-in-50 duration-300 ${config.color}`}>
+      {config.icon}
+      <span className="text-[8px] font-black uppercase tracking-widest">{status}</span>
+      {status === 'success' && (
+        <button 
+          onClick={(e) => { 
+            e.stopPropagation(); 
+            alert(`Resultado de Ejecución:\n${JSON.stringify(result, null, 2)}`); 
+          }}
+          className="ml-1 pl-1.5 border-l border-emerald-200 text-[7px] font-bold hover:text-emerald-800 transition-colors"
+        >
+          INSPECCIONAR
+        </button>
+      )}
+    </div>
+  );
+};
 
 // --- AddNode (Sequential Plus) ---
 export const AddNode = ({ id }: NodeProps) => {
@@ -45,6 +76,7 @@ export const TriggerNode = ({ data, selected, id }: NodeProps<Node<NodeData>>) =
 
   return (
     <div className={`${nodeBaseStyles} ${selected ? selectedStyles : 'hover:border-indigo-300'}`}>
+      <ExecutionStatusBadge status={data.execStatus} result={data.execResult} />
       <div className={nodeHeaderStyles}>
         <div className={`${iconWrapperStyles} bg-indigo-500`}>
           <Zap size={14} />
@@ -62,8 +94,28 @@ export const TriggerNode = ({ data, selected, id }: NodeProps<Node<NodeData>>) =
           </button>
         </div>
       </div>
-      <div className="px-3 py-1.5 bg-gray-50/50">
-        <p className="text-[10px] text-gray-500 font-medium truncate">{data.sublabel || 'Inicia el flujo'}</p>
+      <div className="px-3 pb-3 pt-1 space-y-3">
+        {/* Webhook Technical Info */}
+        <div className="p-2.5 bg-gray-900 rounded-xl border border-gray-800 shadow-inner overflow-hidden">
+           <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[8px] font-black text-indigo-400 uppercase tracking-widest">Webhook URL</span>
+              <button 
+                onClick={(e) => { e.stopPropagation(); alert('URL Copiada!'); }}
+                className="text-[8px] font-bold text-gray-500 hover:text-white transition-colors"
+              >
+                COPIAR
+              </button>
+           </div>
+           <div className="text-[9px] font-mono text-gray-300 truncate opacity-80">
+              https://api.fluxa.io/hooks/trg_{id.slice(0, 8)}
+           </div>
+        </div>
+
+        {/* Live Indicator */}
+        <div className="flex items-center gap-2 px-2 py-1 bg-emerald-50 rounded-lg border border-emerald-100">
+           <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+           <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-tighter">Esperando Evento...</span>
+        </div>
       </div>
       <Handle type="source" position={Position.Bottom} className={`${handleStyles} !bg-indigo-500 !border-indigo-200`} />
     </div>
@@ -76,6 +128,7 @@ export const ActionNode = ({ data, selected, id }: NodeProps<Node<NodeData>>) =>
 
   return (
     <div className={`${nodeBaseStyles} ${selected ? selectedStyles : 'hover:border-indigo-300'}`}>
+      <ExecutionStatusBadge status={data.execStatus} result={data.execResult} />
       <Handle type="target" position={Position.Top} className={handleStyles} />
       <div className={nodeHeaderStyles}>
         <div className={`${iconWrapperStyles} bg-gray-800`}>
@@ -108,6 +161,7 @@ export const ConditionNode = ({ data, selected, id }: NodeProps<Node<NodeData>>)
 
   return (
     <div className={`${nodeBaseStyles} ${selected ? selectedStyles : 'hover:border-indigo-300'}`}>
+      <ExecutionStatusBadge status={data.execStatus} result={data.execResult} />
       <Handle type="target" position={Position.Top} className={handleStyles} />
       <div className={nodeHeaderStyles}>
         <div className={`${iconWrapperStyles} bg-amber-500`}>
@@ -146,6 +200,7 @@ export const DelayNode = ({ data, selected, id }: NodeProps<Node<NodeData>>) => 
 
   return (
     <div className={`${nodeBaseStyles} ${selected ? selectedStyles : 'hover:border-indigo-300'}`}>
+      <ExecutionStatusBadge status={data.execStatus} result={data.execResult} />
       <Handle type="target" position={Position.Top} className={handleStyles} />
       <div className={nodeHeaderStyles}>
         <div className={`${iconWrapperStyles} bg-zinc-400`}>

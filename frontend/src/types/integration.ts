@@ -2,7 +2,7 @@
  * External Resource System (ERS) Refined Types
  */
 
-export type Provider = 'google' | 'microsoft' | 'http' | 'custom';
+export type Provider = 'google' | 'microsoft' | 'slack' | 'discord' | 'shopify' | 'http' | 'custom';
 
 export type ResourceType = 
   | 'spreadsheet' 
