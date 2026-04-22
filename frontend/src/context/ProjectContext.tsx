@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import projectsService from '../services/projects.service';
+import { useAuth } from './AuthContext';
 
 interface Project {
   id: string;
@@ -20,24 +21,27 @@ interface ProjectContextType {
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
 
 export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [activeProject, setActiveProjectState] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refreshProjects = useCallback(async () => {
+    if (!isAuthenticated) return;
+    
     try {
       setLoading(true);
       const data = await projectsService.getAll();
       setProjects(data);
-      
-      // Refresh the projects list without altering the active project state
-      // Selection is handled explicitly by the user or URL parameters in specific pages
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch projects:', error);
+      if (error.response?.status === 401) {
+        setProjects([]);
+      }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   const setActiveProject = (project: Project | null) => {
     setActiveProjectState(project);
@@ -67,8 +71,13 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   useEffect(() => {
-    refreshProjects();
-  }, [refreshProjects]);
+    if (isAuthenticated && !authLoading) {
+      refreshProjects();
+    } else if (!isAuthenticated && !authLoading) {
+      setProjects([]);
+      setLoading(false);
+    }
+  }, [isAuthenticated, authLoading, refreshProjects]);
 
   return (
     <ProjectContext.Provider value={{ 
