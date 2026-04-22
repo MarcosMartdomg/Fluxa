@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ReactFlow,
   MiniMap,
@@ -14,6 +14,7 @@ import {
 
 import WorkflowSidebar from '../../../components/workflow/WorkflowSidebar';
 import NodeEditorPanel from '../../../components/workflow/NodeEditorPanel';
+import ActionSelectorModal from '../../../components/workflow/ActionSelectorModal';
 import { NodeType, FluxaNode, WorkflowNodeData } from '../../../types/workflow';
 
 import { 
@@ -51,6 +52,7 @@ interface WorkflowBuilderProps {
 const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({ projectId }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes as any);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [isSelectorOpen, setIsSelectorOpen] = useState(false);
 
   // Derived state for the selected node
   const selectedNode = (nodes.find((n) => n.selected) as FluxaNode) || null;
@@ -60,19 +62,20 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({ projectId }) => {
     [setEdges],
   );
 
-  const onAddNode = useCallback((type: NodeType) => {
+  const onAddNode = useCallback((type: NodeType, label?: string) => {
     const id = `node_${Date.now()}`;
     const newNode = {
       id,
       type,
       position: { x: 400, y: 150 },
       data: { 
-        label: `Nuevo ${type.charAt(0).toUpperCase() + type.slice(1)}`,
+        label: label || `Nuevo ${type.charAt(0).toUpperCase() + type.slice(1)}`,
         sublabel: 'Configura este bloque'
       },
     };
     
     setNodes((nds) => [...nds, newNode]);
+    setIsSelectorOpen(false);
   }, [setNodes]);
 
   const onUpdateNodeData = useCallback((id: string, data: Partial<WorkflowNodeData>) => {
@@ -115,7 +118,7 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({ projectId }) => {
   return (
     <div className="workflow-builder-container">
       <div className="workflow-builder-content">
-        <WorkflowSidebar onAddNode={onAddNode} />
+        <WorkflowSidebar onAddNode={() => setIsSelectorOpen(true)} />
         
         <div className="react-flow-wrapper cursor-grab active:cursor-grabbing">
           <ReactFlow
@@ -145,6 +148,12 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({ projectId }) => {
           onClose={clearSelection}
         />
       </div>
+
+      <ActionSelectorModal 
+        isOpen={isSelectorOpen}
+        onClose={() => setIsSelectorOpen(false)}
+        onSelect={(type, label) => onAddNode(type, label)}
+      />
     </div>
   );
 };

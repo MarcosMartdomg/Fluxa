@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Settings, Type, AlignLeft, Info } from 'lucide-react';
 import { FluxaNode, WorkflowNodeData } from '../../types/workflow';
 
@@ -9,9 +9,45 @@ interface NodeEditorPanelProps {
 }
 
 const NodeEditorPanel: React.FC<NodeEditorPanelProps> = ({ node, onUpdate, onClose }) => {
+  const [title, setTitle] = useState('');
+  const [subtitle, setSubtitle] = useState('');
+  const [lastFocused, setLastFocused] = useState<'label' | 'sublabel'>('label');
+
+  // Sync state when node changes
+  useEffect(() => {
+    if (node) {
+      setTitle(node.data.label || '');
+      setSubtitle(node.data.sublabel || '');
+    }
+  }, [node]);
+
+  // Handle variable injection from sidebar
+  useEffect(() => {
+    const handleInsert = (e: any) => {
+      if (!node) return;
+      const path = e.detail.path;
+      const variable = `{{${path}}}`;
+      
+      if (lastFocused === 'label') {
+        const newVal = title + variable;
+        setTitle(newVal);
+        onUpdate(node.id, { label: newVal });
+      } else {
+        const newVal = subtitle + variable;
+        setSubtitle(newVal);
+        onUpdate(node.id, { sublabel: newVal });
+      }
+    };
+
+    window.addEventListener('fluxa:insert-variable', handleInsert);
+    return () => window.removeEventListener('fluxa:insert-variable', handleInsert);
+  }, [lastFocused, title, subtitle, node, onUpdate]);
+
   if (!node) return null;
 
   const handleChange = (field: keyof WorkflowNodeData, value: string) => {
+    if (field === 'label') setTitle(value);
+    if (field === 'sublabel') setSubtitle(value);
     onUpdate(node.id, { [field]: value });
   };
 
@@ -54,7 +90,8 @@ const NodeEditorPanel: React.FC<NodeEditorPanelProps> = ({ node, onUpdate, onClo
             </label>
             <input 
               type="text" 
-              value={node.data.label}
+              value={title}
+              onFocus={() => setLastFocused('label')}
               onChange={(e) => handleChange('label', e.target.value)}
               className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
               placeholder="Ej: Enviar Email"
@@ -66,7 +103,8 @@ const NodeEditorPanel: React.FC<NodeEditorPanelProps> = ({ node, onUpdate, onClo
               <AlignLeft size={12} /> Subtítulo / Descripción
             </label>
             <textarea 
-              value={node.data.sublabel || ''}
+              value={subtitle}
+              onFocus={() => setLastFocused('sublabel')}
               onChange={(e) => handleChange('sublabel', e.target.value)}
               rows={3}
               className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-none"
@@ -78,7 +116,7 @@ const NodeEditorPanel: React.FC<NodeEditorPanelProps> = ({ node, onUpdate, onClo
              <div className="p-3 bg-indigo-50 rounded-lg flex gap-3">
                 <Info size={16} className="text-indigo-500 shrink-0 mt-0.5" />
                 <p className="text-[11px] text-indigo-700 leading-relaxed">
-                  Los cambios se aplican instantáneamente al lienzo. Fase 4 activa.
+                  <span className="font-bold">Pro tip:</span> Selecciona un dato en la sidebar para insertarlo como variable dinámica.
                 </p>
              </div>
           </div>

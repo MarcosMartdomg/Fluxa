@@ -56,9 +56,19 @@ const WorkflowSidebar: React.FC<WorkflowSidebarProps> = ({ onAddNode }) => {
 
   const renderBlocks = () => (
     <div className="flex-1 overflow-y-auto px-6 pt-6">
-      <div className="mb-8 px-1">
-        <h2 className="text-[11px] font-black text-gray-900 uppercase tracking-widest mb-1">Librería</h2>
-        <p className="text-[11px] text-gray-400 font-medium italic">Selecciona y añade componentes</p>
+      <div className="mb-6">
+        <button 
+          onClick={() => onAddNode('action')}
+          className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md shadow-indigo-200 flex items-center justify-center gap-2 transition-all active:scale-[0.98] mb-8 group"
+        >
+          <Plus size={16} strokeWidth={3} className="group-hover:rotate-90 transition-transform" />
+          <span className="text-xs font-black uppercase tracking-widest">Añadir paso</span>
+        </button>
+
+        <div className="mb-8 px-1">
+          <h2 className="text-[11px] font-black text-gray-900 uppercase tracking-widest mb-1">Librería</h2>
+          <p className="text-[11px] text-gray-400 font-medium italic">Explora componentes para tu flujo</p>
+        </div>
       </div>
 
       {/* DISPARADORES */}
@@ -121,44 +131,64 @@ const WorkflowSidebar: React.FC<WorkflowSidebarProps> = ({ onAddNode }) => {
     </div>
   );
 
+  const DataRow = ({ label, path, value }: { label: string, path: string, value: string }) => (
+    <button 
+      onClick={() => {
+        const event = new CustomEvent('fluxa:insert-variable', { detail: { path } });
+        window.dispatchEvent(event);
+      }}
+      className="w-full flex justify-between items-center py-1.5 px-2 hover:bg-indigo-50 rounded-md group transition-colors text-left"
+      title={`Haz clic para insertar {{${path}}}`}
+    >
+      <span className="text-gray-900 font-bold group-hover:text-indigo-600 transition-colors">{label}</span>
+      <span className="text-gray-400 group-hover:text-indigo-400 italic flex items-center gap-2">
+        {value}
+        <Plus size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+      </span>
+    </button>
+  );
+
   const renderData = () => (
     <div className="flex-1 overflow-y-auto px-6 pt-6">
       <div className="mb-8 px-1">
-        <h2 className="text-[11px] font-black text-gray-900 uppercase tracking-widest mb-1">Inspector</h2>
-        <p className="text-[11px] text-gray-400 font-medium italic">Estructura de datos del flujo</p>
+        <h2 className="text-[11px] font-black text-gray-900 uppercase tracking-widest mb-1">Inspector de Datos</h2>
+        <p className="text-[11px] text-gray-400 font-medium italic">Haz clic en un dato para insertarlo</p>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-8 pb-12">
+        {/* Trigger Data */}
         <div>
           <h4 className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-3 flex items-center gap-2">
-            <Database size={12} />
-            Entradas Webhook
+            <Zap size={12} />
+            Webhook Trigger
           </h4>
-          <div className="bg-gray-50/80 rounded-xl p-4 border border-gray-100 font-mono text-[10px] text-gray-500 space-y-2">
-             <div className="flex justify-between border-b border-gray-200/40 pb-1.5">
-                <span className="text-gray-900 font-bold">id</span>
-                <span>"w_1234"</span>
-             </div>
-             <div className="flex justify-between border-b border-gray-200/40 pb-1.5">
-                <span className="text-gray-900 font-bold">status</span>
-                <span className="text-emerald-600">"active"</span>
-             </div>
-             <div className="flex justify-between">
-                <span className="text-gray-900 font-bold">version</span>
-                <span>1.0.2</span>
-             </div>
+          <div className="bg-gray-50/80 rounded-xl p-3 border border-gray-100 font-mono text-[10px] space-y-1">
+             <DataRow label="event_type" path="trigger.event_type" value="checkout.completed" />
+             <DataRow label="customer_email" path="trigger.customer_email" value="marcos@fluxa.io" />
+             <DataRow label="amount" path="trigger.amount" value="29.99" />
+             <DataRow label="currency" path="trigger.currency" value="EUR" />
           </div>
         </div>
 
+        {/* Node Outputs */}
         <div>
-          <h4 className="text-[10px] font-bold text-amber-600 uppercase tracking-widest mb-3 flex items-center gap-2">
-            <Settings size={12} />
-            Entorno
+          <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+            <LayoutGrid size={12} />
+            Node Outputs
           </h4>
-          <div className="space-y-2">
-             <div className="p-3 bg-white border border-gray-100 rounded-lg flex justify-between items-center text-[11px]">
-                <span className="font-bold text-gray-700">NODE_ENV</span>
-                <span className="bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded font-bold">PROD</span>
+          <div className="space-y-3">
+             <div>
+                <p className="text-[9px] font-bold text-gray-400 uppercase mb-2 px-2">API Response 1</p>
+                <div className="bg-gray-50/80 rounded-xl p-3 border border-gray-100 font-mono text-[10px] space-y-1">
+                   <DataRow label="status" path="node_1.status" value="200" />
+                   <DataRow label="body.id" path="node_1.body.id" value="user_882" />
+                </div>
+             </div>
+             <div>
+                <p className="text-[9px] font-bold text-gray-400 uppercase mb-2 px-2">Condition Result</p>
+                <div className="bg-gray-50/80 rounded-xl p-3 border border-gray-100 font-mono text-[10px] space-y-1">
+                   <DataRow label="matched" path="node_2.matched" value="true" />
+                </div>
              </div>
           </div>
         </div>
@@ -219,32 +249,29 @@ const WorkflowSidebar: React.FC<WorkflowSidebarProps> = ({ onAddNode }) => {
   return (
     <aside className="flex h-full bg-white border-r border-gray-200 shadow-[4px_0_10px_rgba(0,0,0,0.02)]">
       {/* Icon Bar (Left) */}
-      <div className="w-[64px] bg-gray-50/50 border-r border-gray-100 flex flex-col items-center py-6 gap-6 shrink-0">
+      <div className="w-[52px] bg-gray-50/50 border-r border-gray-100 flex flex-col items-center py-5 gap-4 shrink-0">
         {[
-          { id: 'blocks', icon: <LayoutGrid size={20} />, label: 'Bloques' },
-          { id: 'data', icon: <Database size={20} />, label: 'Datos' },
-          { id: 'config', icon: <Settings size={20} />, label: 'Config' },
-          { id: 'logs', icon: <List size={20} />, label: 'Logs' }
+          { id: 'blocks', icon: <LayoutGrid size={18} />, label: 'Bloques' },
+          { id: 'data', icon: <Database size={18} />, label: 'Datos' },
+          { id: 'config', icon: <Settings size={18} />, label: 'Config' },
+          { id: 'logs', icon: <List size={18} />, label: 'Logs' }
         ].map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as TabType)}
-            className={`group relative p-2.5 rounded-xl transition-all ${
+            title={tab.label}
+            className={`group relative p-2 rounded-lg transition-all ${
               activeTab === tab.id 
-              ? 'bg-indigo-600 text-white shadow-[0_4px_12px_rgba(79,70,229,0.3)]' 
+              ? 'bg-indigo-600 text-white shadow-[0_4px_10px_rgba(79,70,229,0.25)]' 
               : 'text-gray-400 hover:text-gray-600 hover:bg-white'
             }`}
           >
             {tab.icon}
-            {/* Tooltip or label on hover could go here */}
-            {activeTab === tab.id && (
-              <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-indigo-600 rounded-r-full -ml-[64px]" />
-            )}
           </button>
         ))}
         
-        <div className="mt-auto pt-6 border-t border-gray-200/50 w-full flex justify-center">
-           <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-black text-[10px]">
+        <div className="mt-auto pt-4 border-t border-gray-200/50 w-full flex justify-center">
+           <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-black text-[9px] cursor-pointer hover:ring-2 hover:ring-indigo-200 transition-all">
               MM
            </div>
         </div>
