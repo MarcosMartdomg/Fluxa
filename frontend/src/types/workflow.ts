@@ -6,6 +6,10 @@ export interface WorkflowNodeData {
   label: string;
   sublabel?: string;
   icon?: string;
+  // Integration fields
+  provider?: string;
+  actionKey?: string;
+  config?: Record<string, any>;
 }
 
 export type FluxaNode = Node<WorkflowNodeData, NodeType>;

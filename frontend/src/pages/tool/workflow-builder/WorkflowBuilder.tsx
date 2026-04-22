@@ -10,6 +10,7 @@ import {
   Connection,
   Edge,
   BackgroundVariant,
+  useReactFlow,
 } from '@xyflow/react';
 
 import WorkflowSidebar from '../../../components/workflow/WorkflowSidebar';
@@ -21,7 +22,8 @@ import {
   TriggerNode, 
   ActionNode, 
   ConditionNode, 
-  DelayNode 
+  DelayNode,
+  AddNode
 } from './nodes/CustomNodes';
 
 import '@xyflow/react/dist/style.css';
@@ -32,6 +34,7 @@ const nodeTypes = {
   action: ActionNode,
   condition: ConditionNode,
   delay: DelayNode,
+  addNode: AddNode,
 };
 
 const initialNodes = [
@@ -41,9 +44,17 @@ const initialNodes = [
     position: { x: 100, y: 100 },
     data: { label: 'Webhook Recibido', sublabel: 'Endpoint: /api/v1/trigger' },
   },
+  {
+    id: 'add-1',
+    type: 'addNode',
+    position: { x: 185, y: 175 },
+    data: {},
+  },
 ];
 
-const initialEdges: Edge[] = [];
+const initialEdges: Edge[] = [
+  { id: 'e1-add', source: 'node-1', target: 'add-1', animated: true, style: { stroke: '#6366f1', strokeWidth: 2 } }
+];
 
 interface WorkflowBuilderProps {
   projectId: string;
@@ -53,6 +64,9 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({ projectId }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes as any);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
+  const [lastParentId, setLastParentId] = useState<string | null>(null);
+
+  const { screenToFlowPosition, getInternalNode } = useReactFlow();
 
   // Derived state for the selected node
   const selectedNode = (nodes.find((n) => n.selected) as FluxaNode) || null;
@@ -62,21 +76,65 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({ projectId }) => {
     [setEdges],
   );
 
-  const onAddNode = useCallback((type: NodeType, label?: string) => {
+  const onAddNode = useCallback((type: NodeType, label?: string, metadata?: any) => {
     const id = `node_${Date.now()}`;
+    const nextAddId = `add_${Date.now()}`;
+    let position = { x: 400, y: 150 };
+    
+    if (lastParentId) {
+      const parentNode = nodes.find(n => n.id === lastParentId);
+      if (parentNode) {
+        position = { ...parentNode.position };
+        
+        // Find who was pointing to this addNode to redirect them to the new real node
+        setEdges((eds) => 
+          eds.map(edge => {
+            if (edge.target === lastParentId) {
+              return { ...edge, target: id };
+            }
+            return edge;
+          })
+        );
+
+        // Remove the old addNode
+        setNodes((nds) => nds.filter(n => n.id !== lastParentId));
+      }
+    }
+
     const newNode = {
       id,
       type,
-      position: { x: 400, y: 150 },
+      position,
       data: { 
         label: label || `Nuevo ${type.charAt(0).toUpperCase() + type.slice(1)}`,
-        sublabel: 'Configura este bloque'
+        sublabel: metadata?.provider ? `Acción de ${metadata.provider}` : 'Configura este bloque',
+        provider: metadata?.provider,
+        actionKey: metadata?.actionKey,
+        config: {}
       },
     };
+
+    const nextAddNode = {
+      id: nextAddId,
+      type: 'addNode',
+      position: { x: position.x + 85, y: position.y + 75 }, // Centered below
+      data: {},
+    };
+
+    const nextEdge: Edge = {
+      id: `e-${id}-${nextAddId}`,
+      source: id,
+      target: nextAddId,
+      animated: true,
+      style: { stroke: '#6366f1', strokeWidth: 2 }
+    };
     
-    setNodes((nds) => [...nds, newNode]);
+    setNodes((nds) => [...nds, newNode, nextAddNode]);
+    setEdges((eds) => [...eds, nextEdge]);
+    
     setIsSelectorOpen(false);
-  }, [setNodes]);
+    setLastParentId(null);
+  }, [setNodes, setEdges, nodes, lastParentId]);
 
   const onUpdateNodeData = useCallback((id: string, data: Partial<WorkflowNodeData>) => {
     setNodes((nds) => 
@@ -95,6 +153,17 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({ projectId }) => {
   const clearSelection = useCallback(() => {
     setNodes((nds) => nds.map((n) => ({ ...n, selected: false })));
   }, [setNodes]);
+
+  // Listen for canvas "+" button clicks
+  useEffect(() => {
+    const handleOpenSelector = (e: any) => {
+      setLastParentId(e.detail.parentId);
+      setIsSelectorOpen(true);
+    };
+
+    window.addEventListener('fluxa:open-selector', handleOpenSelector);
+    return () => window.removeEventListener('fluxa:open-selector', handleOpenSelector);
+  }, []);
 
   // Handle global mouse button events to prevent back navigation
   useEffect(() => {

@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useProject } from '../../../context/ProjectContext';
+import { ReactFlowProvider } from '@xyflow/react';
 import WorkflowBuilder from '../workflow-builder/WorkflowBuilder';
 
 const ProjectCanvasPage: React.FC = () => {
@@ -20,7 +21,9 @@ const ProjectCanvasPage: React.FC = () => {
   return (
     <div className="h-full flex flex-col bg-white overflow-hidden">
       <div className="flex-1 relative overflow-hidden">
-        <WorkflowBuilder projectId={id} />
+        <ReactFlowProvider>
+          <WorkflowBuilder projectId={id} />
+        </ReactFlowProvider>
       </div>
     </div>
   );

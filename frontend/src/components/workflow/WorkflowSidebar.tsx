@@ -55,20 +55,10 @@ const WorkflowSidebar: React.FC<WorkflowSidebarProps> = ({ onAddNode }) => {
   const [activeTab, setActiveTab] = useState<TabType>('blocks');
 
   const renderBlocks = () => (
-    <div className="flex-1 overflow-y-auto px-6 pt-6">
-      <div className="mb-6">
-        <button 
-          onClick={() => onAddNode('action')}
-          className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md shadow-indigo-200 flex items-center justify-center gap-2 transition-all active:scale-[0.98] mb-8 group"
-        >
-          <Plus size={16} strokeWidth={3} className="group-hover:rotate-90 transition-transform" />
-          <span className="text-xs font-black uppercase tracking-widest">Añadir paso</span>
-        </button>
-
-        <div className="mb-8 px-1">
-          <h2 className="text-[11px] font-black text-gray-900 uppercase tracking-widest mb-1">Librería</h2>
-          <p className="text-[11px] text-gray-400 font-medium italic">Explora componentes para tu flujo</p>
-        </div>
+    <div className="flex-1 overflow-y-auto px-6 pt-6 pb-12">
+      <div className="mb-8 px-1">
+        <h2 className="text-[11px] font-black text-gray-900 uppercase tracking-widest mb-1">Librería de Bloques</h2>
+        <p className="text-[11px] text-gray-400 font-medium italic">Componentes disponibles para tu flujo</p>
       </div>
 
       {/* DISPARADORES */}

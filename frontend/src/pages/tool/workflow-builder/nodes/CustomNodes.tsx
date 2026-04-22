@@ -1,5 +1,5 @@
 import { Handle, Position, NodeProps, Node, useReactFlow } from '@xyflow/react';
-import { Zap, Play, Split, Clock, Trash2, Edit3 } from 'lucide-react';
+import { Zap, Play, Split, Clock, Trash2, Edit3, Plus } from 'lucide-react';
 
 // --- Shared Styles & Types ---
 export type NodeData = {
@@ -15,24 +15,29 @@ const iconWrapperStyles = "w-7 h-7 rounded-md flex items-center justify-center t
 const actionButtonStyles = "p-1.5 hover:bg-gray-100 rounded-md text-gray-400 hover:text-gray-600 transition-colors";
 const handleStyles = "w-3 h-3 bg-white border-2 border-gray-300 hover:border-indigo-500 hover:scale-125 transition-transform z-10";
 
-// --- Add Step Button Component ---
-const AddStepButton = ({ parentId }: { parentId: string }) => (
-  <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 z-20">
-    <div className="w-[1px] h-3 bg-gray-200 mx-auto mb-1"></div>
-    <button 
-      onClick={(e) => {
-        e.stopPropagation();
-        window.dispatchEvent(new CustomEvent('fluxa:open-selector', { 
-          detail: { parentId } 
-        }));
-      }}
-      className="w-6 h-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110 active:scale-95 group"
-      title="Añadir paso siguiente"
-    >
-      <Plus size={14} strokeWidth={3} className="group-hover:rotate-90 transition-transform" />
-    </button>
-  </div>
-);
+// --- AddNode (Sequential Plus) ---
+export const AddNode = ({ id }: NodeProps) => {
+  return (
+    <div className="flex flex-col items-center justify-center group relative p-4">
+      <Handle type="target" position={Position.Top} className="!w-0 !h-0 !border-0 !bg-transparent" />
+      
+      <button 
+        onClick={(e) => {
+          e.stopPropagation();
+          window.dispatchEvent(new CustomEvent('fluxa:open-selector', { 
+            detail: { parentId: id } 
+          }));
+        }}
+        className="w-8 h-8 bg-white border-2 border-indigo-100 text-indigo-600 rounded-full flex items-center justify-center shadow-sm transition-all hover:border-indigo-600 hover:scale-110 active:scale-95 group-hover:shadow-md"
+        title="Interpolar paso"
+      >
+        <Plus size={16} strokeWidth={3} />
+      </button>
+
+      <Handle type="source" position={Position.Bottom} className="!w-0 !h-0 !border-0 !bg-transparent" />
+    </div>
+  );
+};
 
 // --- Trigger Node ---
 export const TriggerNode = ({ data, selected, id }: NodeProps<Node<NodeData>>) => {
@@ -61,9 +66,6 @@ export const TriggerNode = ({ data, selected, id }: NodeProps<Node<NodeData>>) =
         <p className="text-[10px] text-gray-500 font-medium truncate">{data.sublabel || 'Inicia el flujo'}</p>
       </div>
       <Handle type="source" position={Position.Bottom} className={`${handleStyles} !bg-indigo-500 !border-indigo-200`} />
-      
-      {/* Sequential Action Button */}
-      <AddStepButton parentId={id} />
     </div>
   );
 };
@@ -125,11 +127,11 @@ export const ConditionNode = ({ data, selected, id }: NodeProps<Node<NodeData>>)
         </div>
       </div>
       <div className="px-3 py-1.5 flex justify-between gap-4 bg-amber-50/30">
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center relative">
           <span className="text-[8px] font-bold text-emerald-600 uppercase mb-0.5">Sí</span>
           <Handle type="source" position={Position.Bottom} id="true" className={`${handleStyles} !static !bg-emerald-500 !border-emerald-200`} />
         </div>
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center relative">
           <span className="text-[8px] font-bold text-rose-600 uppercase mb-0.5">No</span>
           <Handle type="source" position={Position.Bottom} id="false" className={`${handleStyles} !static !bg-rose-500 !border-rose-200`} />
         </div>

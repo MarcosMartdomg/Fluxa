@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { X, Settings, Type, AlignLeft, Info } from 'lucide-react';
 import { FluxaNode, WorkflowNodeData } from '../../types/workflow';
+import ActionConfigPanel from './ActionConfigPanel';
+import { INTEGRATION_REGISTRY } from '../../constants/integrations';
 
 interface NodeEditorPanelProps {
   node: FluxaNode | null;
@@ -51,6 +53,12 @@ const NodeEditorPanel: React.FC<NodeEditorPanelProps> = ({ node, onUpdate, onClo
     onUpdate(node.id, { [field]: value });
   };
 
+  const handleConfigUpdate = (newConfig: Record<string, any>) => {
+    onUpdate(node.id, { config: newConfig });
+  };
+
+  const isIntegration = !!(node.data.provider && node.data.actionKey);
+
   return (
     <aside className="w-80 h-full bg-white border-l border-gray-200 flex flex-col shadow-xl z-20">
       {/* Header */}
@@ -68,67 +76,80 @@ const NodeEditorPanel: React.FC<NodeEditorPanelProps> = ({ node, onUpdate, onClo
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-2">
-            <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider
-              ${node.type === 'trigger' ? 'bg-indigo-100 text-indigo-600' : 
-                node.type === 'condition' ? 'bg-amber-100 text-amber-600' : 
-                'bg-gray-100 text-gray-600'}`}
-            >
-              {node.type}
-            </span>
-            <span className="text-[10px] text-gray-400 font-mono">{node.id}</span>
-          </div>
-        </div>
+      <div className="flex-1 overflow-y-auto">
+        {isIntegration ? (
+          <ActionConfigPanel 
+            provider={node.data.provider as any}
+            actionKey={node.data.actionKey as any}
+            config={node.data.config || {}}
+            onUpdate={handleConfigUpdate}
+          />
+        ) : (
+          <div className="p-6">
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-2">
+                <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider
+                  ${node.type === 'trigger' ? 'bg-indigo-100 text-indigo-600' : 
+                    node.type === 'condition' ? 'bg-amber-100 text-amber-600' : 
+                    'bg-gray-100 text-gray-600'}`}
+                >
+                  {node.type}
+                </span>
+                <span className="text-[10px] text-gray-400 font-mono">{node.id}</span>
+              </div>
+            </div>
 
-        {/* Form Fields */}
-        <div className="space-y-6">
-          <div>
-            <label className="flex items-center gap-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">
-              <Type size={12} /> Título
-            </label>
-            <input 
-              type="text" 
-              value={title}
-              onFocus={() => setLastFocused('label')}
-              onChange={(e) => handleChange('label', e.target.value)}
-              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-              placeholder="Ej: Enviar Email"
-            />
-          </div>
+            {/* Form Fields */}
+            <div className="space-y-6">
+              <div>
+                <label className="flex items-center gap-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+                  <Type size={12} /> Título
+                </label>
+                <input 
+                  type="text" 
+                  value={title}
+                  onFocus={() => setLastFocused('label')}
+                  onChange={(e) => handleChange('label', e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                  placeholder="Ej: Enviar Email"
+                />
+              </div>
 
-          <div>
-            <label className="flex items-center gap-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">
-              <AlignLeft size={12} /> Subtítulo / Descripción
-            </label>
-            <textarea 
-              value={subtitle}
-              onFocus={() => setLastFocused('sublabel')}
-              onChange={(e) => handleChange('sublabel', e.target.value)}
-              rows={3}
-              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-none"
-              placeholder="Describe qué hace este bloque..."
-            />
-          </div>
+              <div>
+                <label className="flex items-center gap-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+                  <AlignLeft size={12} /> Subtítulo / Descripción
+                </label>
+                <textarea 
+                  value={subtitle}
+                  onFocus={() => setLastFocused('sublabel')}
+                  onChange={(e) => handleChange('sublabel', e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-none"
+                  placeholder="Describe qué hace este bloque..."
+                />
+              </div>
 
-          <div className="pt-4 border-t border-gray-100">
-             <div className="p-3 bg-indigo-50 rounded-lg flex gap-3">
-                <Info size={16} className="text-indigo-500 shrink-0 mt-0.5" />
-                <p className="text-[11px] text-indigo-700 leading-relaxed">
-                  <span className="font-bold">Pro tip:</span> Selecciona un dato en la sidebar para insertarlo como variable dinámica.
-                </p>
-             </div>
+              <div className="pt-4 border-t border-gray-100">
+                <div className="p-3 bg-indigo-50 rounded-lg flex gap-3">
+                  <Info size={16} className="text-indigo-500 shrink-0 mt-0.5" />
+                  <p className="text-[11px] text-indigo-700 leading-relaxed">
+                    <span className="font-bold">Pro tip:</span> Selecciona un dato en la sidebar para insertarlo como variable dinámica.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Footer */}
-      <div className="p-4 bg-gray-50 border-t border-gray-100 mt-auto">
-        <p className="text-[10px] text-gray-400 text-center font-medium">
-          Fluxa Visual Editor v1.0
-        </p>
-      </div>
+      {!isIntegration && (
+        <div className="p-4 bg-gray-50 border-t border-gray-100 mt-auto">
+          <p className="text-[10px] text-gray-400 text-center font-medium">
+            Fluxa Visual Editor v1.0
+          </p>
+        </div>
+      )}
     </aside>
   );
 };
