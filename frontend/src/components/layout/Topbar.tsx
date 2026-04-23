@@ -202,7 +202,7 @@ const Topbar = ({ onToggleSidebar, isExpanded, showSidebarToggle = true }: Topba
                   <div className="flex items-center gap-2"><BookOpen className="w-4 h-4" />Documentation</div>
                   <span className="text-[10px] bg-gray-100 text-gray-400 px-1 rounded font-medium">NEW</span>
                 </button>
-                <button onClick={() => setIsHelpOpen(false)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50">
+                <button onClick={() => { setIsHelpOpen(false); navigate(PATHS.SHORTCUTS); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50">
                   <Command className="w-4 h-4" />Keyboard shortcuts
                 </button>
                 <button onClick={() => { setIsHelpOpen(false); navigate(`${PATHS.CONTACT}?reason=bug`); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50">
