@@ -17,6 +17,7 @@ import ExecutionsPage from '../pages/tool/executions/ExecutionsPage';
 import LogsPage from '../pages/tool/logs/LogsPage';
 import SettingsPage from '../pages/tool/settings/SettingsPage';
 import ShortcutsPage from '../pages/tool/shortcuts/ShortcutsPage';
+import DocumentationPage from '../pages/tool/docs/DocumentationPage';
 
 import LandingPage from '../pages/landing/LandingPage';
 import ProductPage from '../pages/landing/ProductPage';
@@ -115,6 +116,10 @@ export const router = createBrowserRouter([
           {
             path: PATHS.SHORTCUTS,
             element: <ShortcutsPage />,
+          },
+          {
+            path: PATHS.DOCS,
+            element: <DocumentationPage />,
           },
         ],
       },
