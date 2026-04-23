@@ -212,6 +212,7 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({ projectId }) => {
         sublabel: metadata?.provider ? `Acción de ${metadata.provider}` : 'Configura este bloque',
         provider: metadata?.provider,
         actionKey: metadata?.actionKey,
+        maturity: metadata?.maturity,
         config: {}
       },
     };
@@ -327,6 +328,7 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({ projectId }) => {
             const actionNodes = nodes.filter(n => n.type === 'action' || n.type === 'condition' || n.type === 'delay');
             const needsConnection = actionNodes.some(n => n.data?.provider && CONN_PROVIDERS.includes(n.data.provider as string) && !isConnected(n.data.provider as any));
             const needsConfig = actionNodes.some(n => n.data?.provider && !n.data?.actionKey);
+            const hasPrototype = actionNodes.some(n => n.data?.maturity === 'ui-only');
 
             let readinessLabel = '';
             let readinessColor = '';
@@ -336,6 +338,10 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({ projectId }) => {
               readinessLabel = 'SIN WORKFLOW';
               readinessColor = 'bg-gray-50 text-gray-400 border-gray-200';
               readinessDot = 'bg-gray-300';
+            } else if (hasPrototype) {
+              readinessLabel = 'PROTOTIPO';
+              readinessColor = 'bg-indigo-50 text-indigo-400 border-indigo-100';
+              readinessDot = 'bg-indigo-300';
             } else if (needsConnection) {
               readinessLabel = 'SIN CONEXIÓN';
               readinessColor = 'bg-amber-50 text-amber-600 border-amber-100';
@@ -384,7 +390,11 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({ projectId }) => {
           ) : (
             <button 
               onClick={runWorkflow}
-              className="px-6 py-2 bg-indigo-600 text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 active:scale-95 group"
+              disabled={(() => {
+                const actionNodes = nodes.filter(n => n.type === 'action' || n.type === 'condition' || n.type === 'delay');
+                return actionNodes.some(n => n.data?.maturity === 'ui-only');
+              })()}
+              className="px-6 py-2 bg-indigo-600 text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 active:scale-95 group disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale"
             >
               <Play size={14} fill="currentColor" className="group-hover:scale-110 transition-transform" />
               Ejecutar Flujo
@@ -400,7 +410,7 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({ projectId }) => {
       <div className="workflow-builder-content flex flex-1 overflow-hidden relative">
         <WorkflowSidebar 
           activeNode={selectedNode}
-          onAddNode={() => setIsSelectorOpen(true)} 
+          onAddNode={onAddNode} 
         />
         
         <div className="react-flow-wrapper cursor-grab active:cursor-grabbing">

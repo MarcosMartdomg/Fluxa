@@ -110,7 +110,7 @@ export class WorkflowsService {
     
     for (let i = 0; i < sortedActions.length; i++) {
       const node = sortedActions[i];
-      let actionType = ActionType.HTTP_REQUEST; // Default
+      let actionType: ActionType = ActionType.HTTP_REQUEST; // Default
       
       if (node.data?.provider === 'google') actionType = ActionType.GOOGLE_SHEETS;
       if (node.data?.actionKey === 'delay') actionType = ActionType.DELAY;

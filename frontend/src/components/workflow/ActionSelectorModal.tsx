@@ -1,10 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { 
   X, Search, Zap, Globe, Play, Split, 
-  Clock, Code, MessageSquare, Database, ArrowRight, ChevronLeft
+  Clock, Code, MessageSquare, Database, ArrowRight, ChevronLeft,
+  CheckCircle2, AlertCircle, Eye
 } from 'lucide-react';
 import { NodeType } from '../../types/workflow';
-import { Provider, ActionMetadata } from '../../types/integration';
+import { Provider, ActionMetadata, MaturityLevel } from '../../types/integration';
 import { INTEGRATION_REGISTRY } from '../../constants/integrations';
 import { GOOGLE_SPREADSHEET_RESOURCE } from '../../integrations/google/spreadsheet';
 import { MICROSOFT_EXCEL_RESOURCE } from '../../integrations/microsoft/excel';
@@ -14,10 +15,27 @@ import { DISCORD_RESOURCE } from '../../integrations/chat/discord';
 
 // Simplified internal actions for core logic
 const CORE_ACTIONS = [
-  { id: 'condition', type: 'condition' as NodeType, label: 'Condición Lógica', description: 'Divide el flujo (Sí/No)', category: 'Lógica', icon: <Split size={18} />, color: 'bg-amber-500' },
-  { id: 'delay', type: 'delay' as NodeType, label: 'Pausa (Delay)', description: 'Espera un tiempo determinado', category: 'Control', icon: <Clock size={18} />, color: 'bg-zinc-400' },
-  { id: 'js_code', type: 'action' as NodeType, label: 'Custom Code', description: 'Ejecuta JavaScript personalizado', category: 'Custom', icon: <Code size={18} />, color: 'bg-rose-500' },
+  { id: 'condition', type: 'condition' as NodeType, label: 'Condición Lógica', description: 'Divide el flujo (Sí/No)', category: 'Lógica', icon: <Split size={18} />, color: 'bg-amber-500', maturity: 'ui-only' as MaturityLevel },
+  { id: 'delay', type: 'delay' as NodeType, label: 'Pausa (Delay)', description: 'Espera un tiempo determinado', category: 'Control', icon: <Clock size={18} />, color: 'bg-zinc-400', maturity: 'functional' as MaturityLevel },
+  { id: 'js_code', type: 'action' as NodeType, label: 'Custom Code', description: 'Ejecuta JavaScript personalizado', category: 'Custom', icon: <Code size={18} />, color: 'bg-rose-500', maturity: 'ui-only' as MaturityLevel },
 ];
+
+const MaturityBadge: React.FC<{ level?: MaturityLevel }> = ({ level }) => {
+  if (!level) return null;
+  
+  const config = {
+    functional: { label: 'Funcional', icon: <CheckCircle2 size={10} />, color: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
+    'backend-ready': { label: 'Backend-Ready', icon: <AlertCircle size={10} />, color: 'bg-amber-50 text-amber-600 border-amber-100' },
+    'ui-only': { label: 'UI Prototype', icon: <Eye size={10} />, color: 'bg-gray-50 text-gray-400 border-gray-100' },
+  }[level];
+
+  return (
+    <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full border text-[8px] font-black uppercase tracking-widest ${config.color}`}>
+      {config.icon}
+      {config.label}
+    </div>
+  );
+};
 
 interface ActionSelectorModalProps {
   isOpen: boolean;
@@ -35,9 +53,11 @@ const ActionSelectorModal: React.FC<ActionSelectorModalProps> = ({ isOpen, onClo
   const providers = Object.values(INTEGRATION_REGISTRY);
 
   const handleActionSelect = (action: ActionMetadata) => {
+    const provider = selectedProvider ? INTEGRATION_REGISTRY[selectedProvider] : null;
     onSelect('action', action.label, { 
       provider: selectedProvider,
-      actionKey: action.key 
+      actionKey: action.key,
+      maturity: action.maturity || provider?.maturity
     });
     onClose();
   };
@@ -54,9 +74,12 @@ const ActionSelectorModal: React.FC<ActionSelectorModalProps> = ({ isOpen, onClo
             <Globe size={20} />
           </div>
           <div className="flex-1">
-            <h4 className="text-[13px] font-bold text-gray-900 mb-0.5 group-hover:text-indigo-600 transition-colors">
-              {p.label}
-            </h4>
+            <div className="flex items-center justify-between gap-2 mb-0.5">
+              <h4 className="text-[13px] font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                {p.label}
+              </h4>
+              <MaturityBadge level={p.maturity} />
+            </div>
             <p className="text-[10px] text-gray-500 italic">
               {p.resources.length} recursos disponibles
             </p>
@@ -107,10 +130,13 @@ const ActionSelectorModal: React.FC<ActionSelectorModalProps> = ({ isOpen, onClo
               <div className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-indigo-600 shadow-sm shrink-0">
                 <Play size={18} />
               </div>
-              <div>
-                <h4 className="text-[13px] font-bold text-gray-900 mb-0.5 group-hover:text-indigo-600 transition-colors">
-                  {action.label}
-                </h4>
+              <div className="flex-1">
+                <div className="flex items-center justify-between gap-2 mb-0.5">
+                  <h4 className="text-[13px] font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                    {action.label}
+                  </h4>
+                  <MaturityBadge level={action.maturity || provider.maturity} />
+                </div>
                 <p className="text-[11px] text-gray-500 leading-tight">
                   {action.description}
                 </p>
@@ -193,16 +219,19 @@ const ActionSelectorModal: React.FC<ActionSelectorModalProps> = ({ isOpen, onClo
                    {CORE_ACTIONS.filter(a => activeCategory === 'Todas' || a.category === activeCategory).map(action => (
                       <button
                         key={action.id}
-                        onClick={() => onSelect(action.type, action.label)}
+                        onClick={() => onSelect(action.type, action.label, { maturity: action.maturity })}
                         className="flex items-start gap-4 p-4 rounded-2xl border border-gray-100 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all text-left group"
                       >
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0 shadow-sm ${action.color}`}>
                           {action.icon}
                         </div>
-                        <div>
-                          <h4 className="text-[13px] font-bold text-gray-900 mb-0.5 group-hover:text-indigo-600 transition-colors">
-                            {action.label}
-                          </h4>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between gap-2 mb-0.5">
+                            <h4 className="text-[13px] font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                              {action.label}
+                            </h4>
+                            <MaturityBadge level={action.maturity} />
+                          </div>
                           <p className="text-[11px] text-gray-500 leading-tight">
                             {action.description}
                           </p>

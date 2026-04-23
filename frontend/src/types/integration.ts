@@ -64,10 +64,13 @@ export interface ActionField {
   options?: Array<{ label: string; value: string }>;
 }
 
+export type MaturityLevel = 'functional' | 'backend-ready' | 'ui-only';
+
 export interface ActionMetadata {
   key: string;
   label: string;
   description: string;
+  maturity?: MaturityLevel;
   inputSchema: {
     fields: ActionField[];
   };

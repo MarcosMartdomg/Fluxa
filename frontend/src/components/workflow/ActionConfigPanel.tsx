@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { 
   Settings2, Link2, Database, Play, 
-  AlertCircle, CheckCircle2, ChevronRight, Sparkles, Terminal, Code
+  AlertCircle, CheckCircle2, ChevronRight, Sparkles, Terminal, Code, Eye
 } from 'lucide-react';
-import { Provider, ActionMetadata, ActionField } from '../../types/integration';
+import { Provider, ActionMetadata, ActionField, MaturityLevel } from '../../types/integration';
 import { GOOGLE_SPREADSHEET_RESOURCE } from '../../integrations/google/spreadsheet';
 import { GOOGLE_DOCUMENT_RESOURCE } from '../../integrations/google/document';
 import { MICROSOFT_EXCEL_RESOURCE } from '../../integrations/microsoft/excel';
@@ -51,8 +51,12 @@ const ActionConfigPanel: React.FC<ActionConfigPanelProps> = ({
   const action = isCore ? { 
     key: actionKey, 
     label: isCodeNode ? 'Custom Code' : 'Core Action', 
+    maturity: (actionKey === 'delay' ? 'functional' : 'ui-only') as MaturityLevel,
     inputSchema: { fields: [] } 
   } : allActions.find(a => a.key === actionKey);
+
+  const maturity = action?.maturity || INTEGRATION_REGISTRY[provider]?.maturity || 'ui-only';
+  const isPrototype = maturity === 'ui-only';
 
   if (!action) {
     return (
@@ -253,16 +257,28 @@ const ActionConfigPanel: React.FC<ActionConfigPanelProps> = ({
 
       {/* Footer / Status */}
       <div className="p-6 bg-gray-50 border-t border-gray-100">
-        <div className="flex items-center justify-between">
-           <div className="flex items-center gap-2">
+        {isPrototype ? (
+          <div className="flex items-center gap-3 p-3 bg-indigo-50 border border-indigo-100 rounded-xl">
+            <Eye size={16} className="text-indigo-400 shrink-0" />
+            <div>
+              <p className="text-[10px] font-black text-indigo-900 uppercase tracking-widest">PROTOTIPO DE UI</p>
+              <p className="text-[9px] text-indigo-500 font-medium italic leading-tight">Este bloque es visual y no tiene lógica en el backend todavía.</p>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Listo para Probar</span>
-           </div>
-           <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg shadow-indigo-100 transition-all active:scale-[0.98]">
+              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                {maturity === 'functional' ? 'Listo para Ejecutar' : 'Backend-Ready'}
+              </span>
+            </div>
+            <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg shadow-indigo-100 transition-all active:scale-[0.98]">
               <Play size={14} fill="currentColor" />
               <span className="text-[11px] font-black uppercase tracking-wider">Test Step</span>
-           </button>
-        </div>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

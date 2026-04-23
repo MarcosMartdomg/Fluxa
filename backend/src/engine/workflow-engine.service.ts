@@ -65,8 +65,9 @@ export class WorkflowEngineService {
           },
         });
 
-        const maxRetries = action.config?.retryCount || 0;
-        const retryDelay = action.config?.retryDelayMs || 1000;
+        const config = action.config as any;
+        const maxRetries = config?.retryCount || 0;
+        const retryDelay = config?.retryDelayMs || 1000;
         let attempts = 0;
         let success = false;
 

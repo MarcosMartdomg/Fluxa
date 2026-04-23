@@ -9,6 +9,7 @@ export type NodeData = {
   provider?: string;
   actionKey?: string;
   config?: Record<string, any>;
+  maturity?: string;
   execStatus?: string;
   execResult?: any;
 };
@@ -119,13 +120,20 @@ export const TriggerNode = ({ data, selected, id }: NodeProps<Node<NodeData>>) =
 // --- Action Node ---
 export const ActionNode = ({ data, selected, id }: NodeProps<Node<NodeData>>) => {
   const { deleteElements } = useReactFlow();
+  const isPrototype = data.maturity === 'ui-only';
 
   return (
-    <div className={`${nodeBaseStyles} ${selected ? selectedStyles : 'hover:border-indigo-300'}`}>
+    <div className={`${nodeBaseStyles} ${selected ? selectedStyles : isPrototype ? 'border-dashed border-gray-300' : 'hover:border-indigo-300'}`}>
       <ExecutionStatusBadge status={data.execStatus} result={data.execResult} />
+      {isPrototype && (
+        <div className="absolute -top-2 -left-2 flex items-center gap-1.5 px-2 py-1 rounded-full border border-gray-200 bg-white shadow-sm z-[60] text-gray-400">
+          <Eye size={10} />
+          <span className="text-[8px] font-black uppercase tracking-widest">PROTOTIPO</span>
+        </div>
+      )}
       <Handle type="target" position={Position.Top} className={handleStyles} />
       <div className={nodeHeaderStyles}>
-        <div className={`${iconWrapperStyles} bg-gray-800`}>
+        <div className={`${iconWrapperStyles} ${isPrototype ? 'bg-gray-400' : 'bg-gray-800'}`}>
           <Play size={14} />
         </div>
         <div className="overflow-hidden flex-1">

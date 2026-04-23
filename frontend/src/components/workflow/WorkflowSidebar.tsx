@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { 
   Zap, Play, Split, Clock, Plus, Info, 
   Database, Settings, List, LayoutGrid,
-  CheckCircle2, AlertCircle, Search
+  CheckCircle2, AlertCircle, Search, Eye
 } from 'lucide-react';
 import { NodeType } from '../../types/workflow';
+import { MaturityLevel } from '../../types/integration';
 
 // --- Sub-components ---
 
@@ -14,12 +15,13 @@ interface SidebarItemProps {
   description: string;
   icon: React.ReactNode;
   colorClass: string;
-  onAdd: (type: NodeType) => void;
+  maturity?: MaturityLevel;
+  onAdd: (type: NodeType, label: string, metadata?: any) => void;
 }
 
-const SidebarItem: React.FC<SidebarItemProps> = ({ type, label, description, icon, colorClass, onAdd }) => (
+const SidebarItem: React.FC<SidebarItemProps> = ({ type, label, description, icon, colorClass, maturity, onAdd }) => (
   <button 
-    onClick={() => onAdd(type)}
+    onClick={() => onAdd(type, label, { maturity })}
     className="w-full text-left group relative p-3 mb-2 bg-white border border-gray-100 rounded-xl transition-all duration-200 hover:border-indigo-200 hover:shadow-[0_4px_12px_rgba(99,102,241,0.08)] hover:-translate-y-0.5"
   >
     <div className="flex items-start gap-3">
@@ -27,9 +29,16 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ type, label, description, ico
         {icon}
       </div>
       <div className="flex-1 min-w-0 pr-6">
-        <h3 className="text-[13px] font-bold text-gray-900 mb-0.5 group-hover:text-indigo-600 transition-colors">
-          {label}
-        </h3>
+        <div className="flex items-center justify-between gap-2 mb-0.5">
+          <h3 className="text-[13px] font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
+            {label}
+          </h3>
+          {maturity === 'functional' ? (
+            <CheckCircle2 size={10} className="text-emerald-400" />
+          ) : (
+            <Eye size={10} className="text-gray-300" />
+          )}
+        </div>
         <p className="text-[11px] text-gray-500 leading-snug line-clamp-2 italic">
           {description}
         </p>
@@ -46,7 +55,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ type, label, description, ico
 // --- Main Sidebar Component ---
 
 interface WorkflowSidebarProps {
-  onAddNode: (type: NodeType) => void;
+  onAddNode: (type: NodeType, label: string, metadata?: any) => void;
 }
 
 type TabType = 'blocks' | 'data' | 'config' | 'logs';
@@ -73,6 +82,7 @@ const WorkflowSidebar: React.FC<WorkflowSidebarProps> = ({ onAddNode }) => {
           description="Escucha peticiones HTTP externas."
           icon={<Zap size={14} />}
           colorClass="bg-indigo-500"
+          maturity="functional"
           onAdd={onAddNode}
         />
       </div>
@@ -90,6 +100,7 @@ const WorkflowSidebar: React.FC<WorkflowSidebarProps> = ({ onAddNode }) => {
             description="Llamadas a servicios externos."
             icon={<Play size={14} />}
             colorClass="bg-gray-800"
+            maturity="functional"
             onAdd={onAddNode}
           />
           <SidebarItem 
@@ -98,6 +109,7 @@ const WorkflowSidebar: React.FC<WorkflowSidebarProps> = ({ onAddNode }) => {
             description="Pausa el flujo de ejecución."
             icon={<Clock size={14} />}
             colorClass="bg-zinc-400"
+            maturity="functional"
             onAdd={onAddNode}
           />
         </div>
@@ -115,6 +127,7 @@ const WorkflowSidebar: React.FC<WorkflowSidebarProps> = ({ onAddNode }) => {
           description="Bifurca el camino (Sí/No)."
           icon={<Split size={14} />}
           colorClass="bg-amber-500"
+          maturity="ui-only"
           onAdd={onAddNode}
         />
       </div>
