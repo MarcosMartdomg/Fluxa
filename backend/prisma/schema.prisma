@@ -18,6 +18,7 @@ enum ActionType {
   EMAIL
   DELAY
   CONDITION
+  GOOGLE_SHEETS
 }
 
 enum ExecutionStatus {
@@ -32,10 +33,11 @@ model User {
   email     String     @unique
   password  String
   name      String?
-  projects  Project[]
-  workflows Workflow[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  projects    Project[]
+  workflows   Workflow[]
+  connections Connection[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
 model Project {
@@ -129,4 +131,16 @@ model Contact {
   status    String   @default("PENDING")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+model Connection {
+  id           String   @id @default(cuid())
+  providerId   String   // e.g. 'google', 'slack'
+  name         String?  // User-defined name for this connection
+  credentials  Json     // JSON with tokens/keys
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, providerId, name])
 }

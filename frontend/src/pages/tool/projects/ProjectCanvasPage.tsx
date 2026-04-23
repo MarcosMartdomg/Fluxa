@@ -7,20 +7,26 @@ import { ConnectionProvider } from '../../../context/ConnectionContext';
 
 const ProjectCanvasPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { projects, activeProject, setActiveProject } = useProject();
+  const { projects, activeProject, setActiveProject, loading } = useProject();
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || loading) return;
     const projectInList = projects.find((project) => project.id === id);
     if (projectInList && activeProject?.id !== projectInList.id) {
       setActiveProject(projectInList);
     }
-  }, [id, projects, activeProject?.id, setActiveProject]);
+  }, [id, projects, activeProject?.id, setActiveProject, loading]);
 
-  if (!id) return null;
+  if (loading || !id || (activeProject && activeProject.id !== id)) {
+    return (
+      <div className="h-screen w-full flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="h-full flex flex-col bg-white overflow-hidden">
+    <div className="h-screen w-full flex flex-col bg-white overflow-hidden">
       <div className="flex-1 relative overflow-hidden">
         <ConnectionProvider>
           <ReactFlowProvider>

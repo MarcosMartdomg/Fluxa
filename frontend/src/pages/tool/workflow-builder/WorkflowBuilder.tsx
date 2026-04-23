@@ -17,6 +17,7 @@ import { Zap, Play, Settings } from 'lucide-react';
 import WorkflowSidebar from '../../../components/workflow/WorkflowSidebar';
 import NodeEditorPanel from '../../../components/workflow/NodeEditorPanel';
 import ActionSelectorModal from '../../../components/workflow/ActionSelectorModal';
+import projectsService from '../../../services/projects.service';
 import { NodeType, FluxaNode, WorkflowNodeData } from '../../../types/workflow';
 
 import { 
@@ -62,10 +63,33 @@ interface WorkflowBuilderProps {
 }
 
 const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({ projectId }) => {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes as any);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [loading, setLoading] = useState(true);
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
   const [lastParentId, setLastParentId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadCanvas = async () => {
+      try {
+        setLoading(true);
+        const data = await projectsService.getCanvas(projectId);
+        if (data && data.cards) {
+          const validNodes = data.cards.map((node: any) => ({
+            ...node,
+            position: node.position || { x: 0, y: 0 }
+          }));
+          setNodes(validNodes);
+          setEdges(data.edges || []);
+        }
+      } catch (error) {
+        console.error('Error loading canvas:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadCanvas();
+  }, [projectId, setNodes, setEdges]);
 
   const { screenToFlowPosition, getInternalNode } = useReactFlow();
 
@@ -192,7 +216,7 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({ projectId }) => {
     setIsExecuting(true);
 
     // Reset all nodes to idle
-    setNodes(nds => nds.map(n => ({ ...n, data: { ...n, execStatus: 'idle' } })));
+    setNodes(nds => nds.map(n => ({ ...n, data: { ...n.data, execStatus: 'idle' } })));
 
     // Sequential simulation
     // 1. Start with Trigger
@@ -263,6 +287,8 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({ projectId }) => {
 
     setIsExecuting(false);
   };
+
+  if (loading) return null;
 
   return (
     <div className="workflow-builder-container flex flex-col h-screen bg-[#F8F9FB] overflow-hidden">

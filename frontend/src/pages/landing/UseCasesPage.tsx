@@ -87,7 +87,7 @@ const UseCasesPage: React.FC = () => {
   return (
     <div className="uc-container">
       <Navbar />
-      <main className="pt-20">
+      <main>
         <HeroSection />
         <ValueSection />
         <UseCaseGrid />

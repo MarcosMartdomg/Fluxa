@@ -1,20 +1,20 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { ExecutionStatus, ActionType } from '@prisma/client';
-import { HttpRequestHandler } from './handlers/http-request.handler';
-import { DelayHandler } from './handlers/delay.handler';
-import { EmailHandler } from './handlers/email.handler';
+import { ACTION_HANDLERS, ActionHandler } from './handlers/action-handler.interface';
 
 @Injectable()
 export class WorkflowEngineService {
   private readonly logger = new Logger(WorkflowEngineService.name);
 
+  private readonly handlers = new Map<ActionType, ActionHandler>();
+
   constructor(
     private readonly prisma: PrismaService,
-    private readonly httpHandler: HttpRequestHandler,
-    private readonly delayHandler: DelayHandler,
-    private readonly emailHandler: EmailHandler,
-  ) {}
+    @Inject(ACTION_HANDLERS) handlers: ActionHandler[],
+  ) {
+    handlers.forEach(handler => this.handlers.set(handler.type, handler));
+  }
 
   async executeWorkflow(workflowId: string, initialPayload: any, executionId?: string) {
     this.logger.log(`Starting workflow execution for ID: ${workflowId}`);
@@ -57,7 +57,7 @@ export class WorkflowEngineService {
         await this.logStep(execution.id, `Executing step: ${action.name} (${action.type})`);
 
         try {
-          const result = await this.executeAction(action, currentPayload, execution.id);
+          const result = await this.executeAction(action, currentPayload, execution.id, workflow.userId);
           currentPayload = result; // Update payload for the next step
           await this.logStep(execution.id, `Step ${action.name} completed successfully`, result);
         } catch (error) {
@@ -89,24 +89,21 @@ export class WorkflowEngineService {
     }
   }
 
-  private async executeAction(action: any, payload: any, executionId: string) {
+  private async executeAction(action: any, payload: any, executionId: string, userId: string) {
     const context = {
       workflowId: action.workflowId,
       executionId,
+      userId,
       payload,
       config: action.config,
     };
 
-    switch (action.type) {
-      case ActionType.HTTP_REQUEST:
-        return this.httpHandler.execute(context);
-      case ActionType.DELAY:
-        return this.delayHandler.execute(context);
-      case ActionType.EMAIL:
-        return this.emailHandler.execute(context);
-      default:
-        throw new Error(`Unsupported action type: ${action.type}`);
+    const handler = this.handlers.get(action.type);
+    if (!handler) {
+      throw new Error(`Unsupported action type: ${action.type}`);
     }
+
+    return handler.execute(context);
   }
 
   private async logStep(executionId: string, message: string, meta: any = null, level: string = 'INFO') {

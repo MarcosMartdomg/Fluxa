@@ -171,7 +171,7 @@ const ProductPage: React.FC = () => {
   return (
     <div className="product-container">
       <Navbar />
-      <main className="pt-20">
+      <main>
         <HeroSection />
         <EventSection />
         <ProcessFlow />

@@ -18,8 +18,8 @@ const NodeEditorPanel: React.FC<NodeEditorPanelProps> = ({ node, onUpdate, onClo
   // Sync state when node changes
   useEffect(() => {
     if (node) {
-      setTitle(node.data.label || '');
-      setSubtitle(node.data.sublabel || '');
+      setTitle(node.data?.label || '');
+      setSubtitle(node.data?.sublabel || '');
     }
   }, [node]);
 
@@ -57,7 +57,7 @@ const NodeEditorPanel: React.FC<NodeEditorPanelProps> = ({ node, onUpdate, onClo
     onUpdate(node.id, { config: newConfig });
   };
 
-  const isIntegration = !!(node.data.provider && node.data.actionKey);
+  const isIntegration = !!(node.data?.provider && node.data?.actionKey);
 
   return (
     <aside className="w-80 h-full bg-white border-l border-gray-200 flex flex-col shadow-xl z-20">
@@ -79,9 +79,9 @@ const NodeEditorPanel: React.FC<NodeEditorPanelProps> = ({ node, onUpdate, onClo
       <div className="flex-1 overflow-y-auto">
         {isIntegration ? (
           <ActionConfigPanel 
-            provider={node.data.provider as any}
-            actionKey={node.data.actionKey as any}
-            config={node.data.config || {}}
+            provider={node.data?.provider as any}
+            actionKey={node.data?.actionKey as any}
+            config={node.data?.config || {}}
             onUpdate={handleConfigUpdate}
           />
         ) : (

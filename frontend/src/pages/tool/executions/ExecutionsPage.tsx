@@ -165,11 +165,15 @@ const ExecutionsPage = () => {
         const data = await projectsService.getCanvas(id);
         if (cancelled) return;
 
-        const loadedCards = Array.isArray(data?.cards) ? (data.cards as CanvasCard[]) : [];
+        const loadedCards = Array.isArray(data?.cards) ? data.cards.map((card: any) => ({
+          ...card,
+          x: card.x ?? card.position?.x ?? 0,
+          y: card.y ?? card.position?.y ?? 0,
+        })) : [];
         const loadedEdges = Array.isArray(data?.edges) ? (data.edges as CanvasEdge[]) : [];
 
         if (loadedCards.length > 0) {
-          setCards(loadedCards);
+          setCards(loadedCards as CanvasCard[]);
           setEdges(loadedEdges);
         } else {
           setCards(defaultCanvasState.cards);

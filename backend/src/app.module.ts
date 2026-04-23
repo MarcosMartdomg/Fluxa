@@ -14,6 +14,8 @@ import { BullMqModule } from './queue/bullmq.module';
 import { validate } from './config/env.validation';
 import { ProjectsModule } from './projects/projects.module';
 import { ContactsModule } from './contacts/contacts.module';
+import { CredentialsModule } from './modules/credentials/credentials.module';
+import { WorkflowEngineModule } from './engine/workflow-engine.module';
 
 @Module({
   imports: [
@@ -40,6 +42,8 @@ import { ContactsModule } from './contacts/contacts.module';
     SchedulerModule,
     ProjectsModule,
     ContactsModule,
+    CredentialsModule,
+    WorkflowEngineModule,
   ],
 })
 
