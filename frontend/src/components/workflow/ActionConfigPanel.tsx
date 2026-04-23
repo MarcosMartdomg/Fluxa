@@ -64,7 +64,7 @@ const ActionConfigPanel: React.FC<ActionConfigPanelProps> = ({
   }
 
   const handleFieldChange = (fieldId: string, value: any) => {
-    onUpdate({ ...config, [fieldId]: value });
+    onUpdate({ ...config, actionKey, [fieldId]: value });
   };
 
   const handleVariableSelect = (fieldId: string, path: string) => {

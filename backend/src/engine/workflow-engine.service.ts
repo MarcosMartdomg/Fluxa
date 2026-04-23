@@ -56,13 +56,60 @@ export class WorkflowEngineService {
       for (const action of workflow.actions) {
         await this.logStep(execution.id, `Executing step: ${action.name} (${action.type})`);
 
-        try {
-          const result = await this.executeAction(action, currentPayload, execution.id, workflow.userId);
-          currentPayload = result; // Update payload for the next step
-          await this.logStep(execution.id, `Step ${action.name} completed successfully`, result);
-        } catch (error) {
-          await this.logStep(execution.id, `Step ${action.name} failed: ${error.message}`, null, 'ERROR');
-          throw error;
+        const stepExecution = await this.prisma.stepExecution.create({
+          data: {
+            executionId: execution.id,
+            actionId: action.id,
+            status: 'RUNNING',
+            input: action.config,
+          },
+        });
+
+        const maxRetries = action.config?.retryCount || 0;
+        const retryDelay = action.config?.retryDelayMs || 1000;
+        let attempts = 0;
+        let success = false;
+
+        while (attempts <= maxRetries && !success) {
+          try {
+            const result = await this.executeAction(action, currentPayload, execution.id, workflow.userId);
+            
+            await this.prisma.stepExecution.update({
+              where: { id: stepExecution.id },
+              data: {
+                status: 'COMPLETED',
+                output: result,
+                finishedAt: new Date(),
+              },
+            });
+
+            currentPayload = result;
+            await this.logStep(execution.id, `Step ${action.name} completed successfully`, result);
+            success = true;
+          } catch (error) {
+            attempts++;
+            if (attempts <= maxRetries) {
+              await this.logStep(
+                execution.id, 
+                `Step ${action.name} failed: ${error.message}. Retrying in ${retryDelay}ms... (${attempts}/${maxRetries})`, 
+                null, 
+                'WARNING'
+              );
+              await new Promise(resolve => setTimeout(resolve, retryDelay));
+            } else {
+              await this.prisma.stepExecution.update({
+                where: { id: stepExecution.id },
+                data: {
+                  status: 'FAILED',
+                  error: error.message,
+                  finishedAt: new Date(),
+                },
+              });
+
+              await this.logStep(execution.id, `Step ${action.name} failed after ${attempts} attempts: ${error.message}`, null, 'ERROR');
+              throw error; // Stop execution on error
+            }
+          }
         }
       }
 

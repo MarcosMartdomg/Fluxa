@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
+import { WorkflowsService } from '../workflows/workflows.service';
 
 @Injectable()
 export class ProjectsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private workflowsService: WorkflowsService,
+  ) {}
 
   private async assertProjectOwnership(userId: string, projectId: string) {
     const project = await this.prisma.project.findFirst({
@@ -63,7 +67,7 @@ export class ProjectsService {
     const cards = (Array.isArray(data.cards) ? data.cards : []) as Prisma.JsonArray;
     const edges = (Array.isArray(data.edges) ? data.edges : []) as Prisma.JsonArray;
 
-    return this.prisma.projectCanvas.upsert({
+    const result = await this.prisma.projectCanvas.upsert({
       where: { projectId },
       update: {
         cards,
@@ -76,5 +80,16 @@ export class ProjectsService {
       },
       select: { cards: true, edges: true, updatedAt: true },
     });
+
+    // 2. Sync to executable actions for any associated workflows
+    const workflow = await this.prisma.workflow.findFirst({
+      where: { projectId },
+    });
+
+    if (workflow) {
+      await this.workflowsService.syncActionsFromCanvas(workflow.id);
+    }
+
+    return result;
   }
 }

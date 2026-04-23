@@ -10,6 +10,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useProject } from '../../../context/ProjectContext';
 import projectsService from '../../../services/projects.service';
+import workflowsService from '../../../services/workflows.service';
+import executionsService from '../../../services/executions.service';
 import ModeSwitcher from '../../../components/common/ModeSwitcher';
 
 type CardKind = 'trigger' | 'action' | 'connection';
@@ -55,6 +57,20 @@ type WorkflowExecution = {
   nodeStates: ExecutionNodeState[];
 };
 
+const mapBackendStatus = (status: string): ExecutionNodeStatus => {
+  const map: Record<string, ExecutionNodeStatus> = {
+    RUNNING: 'running', COMPLETED: 'success', FAILED: 'error', PENDING: 'waiting',
+  };
+  return map[status] || 'idle';
+};
+
+const mapExecutionStatus = (status: string): ExecutionStatus => {
+  const map: Record<string, ExecutionStatus> = {
+    RUNNING: 'running', COMPLETED: 'success', FAILED: 'error', PENDING: 'running',
+  };
+  return map[status] || 'running';
+};
+
 const defaultCanvasState: CanvasState = {
   cards: [
     {
@@ -77,42 +93,7 @@ const defaultCanvasState: CanvasState = {
   edges: [{ id: 'edge-1-2', from: '1', to: '2' }],
 };
 
-const mockExecutions: WorkflowExecution[] = [
-  {
-    id: 'exec-001',
-    status: 'running',
-    startedAt: '2026-04-13T09:10:00Z',
-    triggerType: 'manual',
-    nodeStates: [
-      { cardId: '1', status: 'success', message: 'Trigger recibido', durationMs: 200 },
-      { cardId: '2', status: 'running', message: 'Procesando acción actual...' },
-    ],
-  },
-  {
-    id: 'exec-002',
-    status: 'success',
-    startedAt: '2026-04-13T08:55:00Z',
-    finishedAt: '2026-04-13T08:55:04Z',
-    triggerType: 'webhook',
-    totalDurationMs: 4200,
-    nodeStates: [
-      { cardId: '1', status: 'success', message: 'Trigger ejecutado', durationMs: 300 },
-      { cardId: '2', status: 'success', message: 'Acción completada', durationMs: 1800 },
-    ],
-  },
-  {
-    id: 'exec-003',
-    status: 'error',
-    startedAt: '2026-04-13T08:30:00Z',
-    finishedAt: '2026-04-13T08:30:02Z',
-    triggerType: 'schedule',
-    totalDurationMs: 2100,
-    nodeStates: [
-      { cardId: '1', status: 'success', message: 'Trigger ejecutado', durationMs: 180 },
-      { cardId: '2', status: 'error', message: 'La acción falló por timeout', durationMs: 1500 },
-    ],
-  },
-];
+
 
 const formatDateTime = (value?: string) => {
   if (!value) return '-';
@@ -145,8 +126,67 @@ const ExecutionsPage = () => {
   const [edges, setEdges] = useState<CanvasEdge[]>(defaultCanvasState.edges);
   const [isCanvasLoaded, setIsCanvasLoaded] = useState(false);
 
-  const [executions] = useState<WorkflowExecution[]>(mockExecutions);
-  const [selectedExecutionId, setSelectedExecutionId] = useState<string>(mockExecutions[0]?.id ?? '');
+  const [executions, setExecutions] = useState<WorkflowExecution[]>([]);
+  const [selectedExecutionId, setSelectedExecutionId] = useState<string>('');
+
+  // Fetch real executions from backend
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+
+    const loadExecutions = async () => {
+      try {
+        const workflows = await workflowsService.getAll(id);
+        if (cancelled || !workflows?.length) return;
+
+        const workflowId = workflows[0].id;
+        const rawExecutions = await executionsService.getByWorkflow(workflowId);
+        if (cancelled) return;
+
+        // Fetch details (with stepExecutions) for each execution
+        const detailed = await Promise.all(
+          rawExecutions.slice(0, 20).map(async (exec: any) => {
+            try {
+              const full = await executionsService.getById(exec.id);
+              const nodeStates: ExecutionNodeState[] = (full.stepExecutions || []).map((step: any) => ({
+                cardId: step.actionId,
+                status: mapBackendStatus(step.status),
+                message: step.error || (step.status === 'COMPLETED' ? 'Completado' : step.status),
+                durationMs: step.finishedAt && step.startedAt
+                  ? new Date(step.finishedAt).getTime() - new Date(step.startedAt).getTime()
+                  : undefined,
+              }));
+
+              const totalMs = full.finishedAt && full.startedAt
+                ? new Date(full.finishedAt).getTime() - new Date(full.startedAt).getTime()
+                : undefined;
+
+              return {
+                id: full.id,
+                status: mapExecutionStatus(full.status),
+                startedAt: full.startedAt,
+                finishedAt: full.finishedAt,
+                triggerType: 'manual' as const,
+                totalDurationMs: totalMs,
+                nodeStates,
+              };
+            } catch {
+              return null;
+            }
+          })
+        );
+
+        const valid = detailed.filter(Boolean) as WorkflowExecution[];
+        setExecutions(valid);
+        if (valid.length > 0) setSelectedExecutionId(valid[0].id);
+      } catch (err) {
+        console.error('Failed to load executions:', err);
+      }
+    };
+
+    loadExecutions();
+    return () => { cancelled = true; };
+  }, [id]);
 
   useEffect(() => {
     if (!id) return;

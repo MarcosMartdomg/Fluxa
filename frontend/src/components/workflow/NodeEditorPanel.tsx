@@ -101,6 +101,29 @@ const NodeEditorPanel: React.FC<NodeEditorPanelProps> = ({ node, onUpdate, onClo
 
             {/* Form Fields */}
             <div className="space-y-6">
+              {/* Execution Info */}
+              {node.data?.execStatus && node.data?.execStatus !== 'IDLE' && (
+                <div className={`p-4 rounded-xl border ${
+                  node.data.execStatus === 'RUNNING' ? 'bg-indigo-50 border-indigo-100 text-indigo-700' :
+                  node.data.execStatus === 'COMPLETED' ? 'bg-emerald-50 border-emerald-100 text-emerald-700' :
+                  'bg-rose-50 border-rose-100 text-rose-700'
+                }`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Info size={14} />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Resultado de Ejecución</span>
+                  </div>
+                  <div className="bg-white/50 rounded-lg p-2 font-mono text-[10px] break-all max-h-32 overflow-y-auto">
+                    {node.data.execResult ? (
+                      typeof node.data.execResult === 'object' ? 
+                        JSON.stringify(node.data.execResult, null, 2) : 
+                        node.data.execResult
+                    ) : (
+                      'No hay datos de salida'
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className="flex items-center gap-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">
                   <Type size={12} /> Título

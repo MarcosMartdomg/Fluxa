@@ -1,12 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
-import { QueueService } from '../queue/queue.service';
+import { WorkflowEngineService } from '../engine/workflow-engine.service';
 
 @Injectable()
 export class ExecutionsService {
+  private readonly logger = new Logger(ExecutionsService.name);
+
   constructor(
     private prisma: PrismaService,
-    // private queueService: QueueService,
+    private engineService: WorkflowEngineService,
   ) {}
 
   async trigger(workflowId: string, payload: any) {
@@ -18,7 +20,10 @@ export class ExecutionsService {
       },
     });
 
-    // await this.queueService.addWorkflowToQueue(workflowId, payload, execution.id);
+    // Fire-and-forget: run the engine asynchronously
+    this.engineService.executeWorkflow(workflowId, payload, execution.id).catch((error) => {
+      this.logger.error(`Workflow ${workflowId} execution failed: ${error.message}`);
+    });
 
     return execution;
   }
@@ -33,7 +38,7 @@ export class ExecutionsService {
   async findOne(id: string) {
     const execution = await this.prisma.execution.findUnique({
       where: { id },
-      include: { logs: true },
+      include: { logs: true, stepExecutions: true },
     });
     if (!execution) throw new NotFoundException(`Execution ${id} not found`);
     return execution;

@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ExecutionsService } from './executions.service';
 import { ExecutionsController } from './executions.controller';
-// import { ExecutionProcessor } from './processors/execution.processor';
-// import { BullMqModule } from '../queue/bullmq.module';
+import { WorkflowEngineModule } from '../engine/workflow-engine.module';
 
 @Module({
-  imports: [/*BullMqModule*/],
-  providers: [ExecutionsService, /*ExecutionProcessor*/],
+  imports: [WorkflowEngineModule],
+  providers: [ExecutionsService],
   controllers: [ExecutionsController],
   exports: [ExecutionsService],
 })

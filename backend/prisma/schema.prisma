@@ -94,10 +94,11 @@ model Action {
   type       ActionType
   config     Json
   order      Int
-  workflowId String
-  workflow   Workflow   @relation(fields: [workflowId], references: [id])
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
+  workflowId     String
+  workflow       Workflow        @relation(fields: [workflowId], references: [id])
+  stepExecutions StepExecution[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 }
 
 model Execution {
@@ -105,10 +106,11 @@ model Execution {
   status     ExecutionStatus @default(PENDING)
   payload    Json?
   workflowId String
-  workflow   Workflow        @relation(fields: [workflowId], references: [id])
-  logs       ExecutionLog[]
-  startedAt  DateTime        @default(now())
-  finishedAt DateTime?
+  workflow       Workflow        @relation(fields: [workflowId], references: [id])
+  logs           ExecutionLog[]
+  stepExecutions StepExecution[]
+  startedAt      DateTime        @default(now())
+  finishedAt     DateTime?
 }
 
 model ExecutionLog {
@@ -132,6 +134,20 @@ model Contact {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+model StepExecution {
+  id          String    @id @default(cuid())
+  executionId String
+  execution   Execution @relation(fields: [executionId], references: [id])
+  actionId    String
+  action      Action    @relation(fields: [actionId], references: [id])
+  status      String    // COMPLETED, FAILED
+  input       Json?
+  output      Json?
+  error       String?
+  startedAt   DateTime  @default(now())
+  finishedAt  DateTime?
+}
+
 model Connection {
   id           String   @id @default(cuid())
   providerId   String   // e.g. 'google', 'slack'

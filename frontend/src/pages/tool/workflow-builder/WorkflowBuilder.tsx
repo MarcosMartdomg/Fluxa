@@ -18,6 +18,9 @@ import WorkflowSidebar from '../../../components/workflow/WorkflowSidebar';
 import NodeEditorPanel from '../../../components/workflow/NodeEditorPanel';
 import ActionSelectorModal from '../../../components/workflow/ActionSelectorModal';
 import projectsService from '../../../services/projects.service';
+import workflowsService from '../../../services/workflows.service';
+import executionsService from '../../../services/executions.service';
+import { useConnections } from '../../../context/ConnectionContext';
 import { NodeType, FluxaNode, WorkflowNodeData } from '../../../types/workflow';
 
 import { 
@@ -68,6 +71,10 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({ projectId }) => {
   const [loading, setLoading] = useState(true);
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
   const [lastParentId, setLastParentId] = useState<string | null>(null);
+  const [workflowId, setWorkflowId] = useState<string | null>(null);
+  const [executionStatus, setExecutionStatus] = useState<'IDLE' | 'RUNNING' | 'COMPLETED' | 'FAILED'>('IDLE');
+  const [activeExecutionId, setActiveExecutionId] = useState<string | null>(null);
+  const { isConnected } = useConnections();
 
   useEffect(() => {
     const loadCanvas = async () => {
@@ -82,6 +89,12 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({ projectId }) => {
           setNodes(validNodes);
           setEdges(data.edges || []);
         }
+
+        // Get associated workflow
+        const workflows = await workflowsService.getAll(projectId);
+        if (workflows && workflows.length > 0) {
+          setWorkflowId(workflows[0].id);
+        }
       } catch (error) {
         console.error('Error loading canvas:', error);
       } finally {
@@ -90,6 +103,46 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({ projectId }) => {
     };
     loadCanvas();
   }, [projectId, setNodes, setEdges]);
+
+  // Polling execution status
+  useEffect(() => {
+    let interval: any;
+    if (activeExecutionId && executionStatus === 'RUNNING') {
+      interval = setInterval(async () => {
+        try {
+          const execution = await executionsService.getById(activeExecutionId);
+          if (execution.status !== 'RUNNING') {
+            setExecutionStatus(execution.status);
+            if (execution.status !== 'RUNNING') {
+              setActiveExecutionId(null);
+            }
+
+            // Map step results back to nodes
+            if (execution.stepExecutions) {
+              setNodes(nds => nds.map(node => {
+                const step = execution.stepExecutions.find((s: any) => s.actionId === node.id);
+                if (step) {
+                  return {
+                    ...node,
+                    data: {
+                      ...node.data,
+                      execStatus: step.status,
+                      execResult: step.output || step.error
+                    }
+                  };
+                }
+                return node;
+              }));
+            }
+          }
+        } catch (error) {
+          console.error('Polling error:', error);
+          clearInterval(interval);
+        }
+      }, 2000);
+    }
+    return () => clearInterval(interval);
+  }, [activeExecutionId, executionStatus, setNodes]);
 
   const { screenToFlowPosition, getInternalNode } = useReactFlow();
 
@@ -100,6 +153,30 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({ projectId }) => {
     (params: Connection) => setEdges((eds) => addEdge({ ...params, animated: true }, eds)),
     [setEdges],
   );
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if typing in input/textarea
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        const selectedNodes = nodes.filter(n => n.selected);
+        const selectedEdges = edges.filter(e => e.selected);
+
+        if (selectedNodes.length > 0 || selectedEdges.length > 0) {
+          const selectedNodeIds = new Set(selectedNodes.map(n => n.id));
+          
+          setNodes(nds => nds.filter(n => !n.selected));
+          // Remove selected edges OR edges connected to deleted nodes
+          setEdges(eds => eds.filter(e => !e.selected && !selectedNodeIds.has(e.source) && !selectedNodeIds.has(e.target)));
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [nodes, edges, setNodes, setEdges]);
 
   const onAddNode = useCallback((type: NodeType, label?: string, metadata?: any) => {
     const id = `node_${Date.now()}`;
@@ -212,80 +289,19 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({ projectId }) => {
   const [isExecuting, setIsExecuting] = useState(false);
 
   const runWorkflow = async () => {
-    if (isExecuting) return;
-    setIsExecuting(true);
+    if (!workflowId) return;
 
-    // Reset all nodes to idle
-    setNodes(nds => nds.map(n => ({ ...n, data: { ...n.data, execStatus: 'idle' } })));
-
-    // Sequential simulation
-    // 1. Start with Trigger
-    const trigger = nodes.find(n => n.type === 'trigger');
-    if (!trigger) {
-      setIsExecuting(false);
-      return;
-    }
-
-    const setNodeStatus = (nodeId: string, status: 'loading' | 'success' | 'error', result?: any) => {
-      setNodes(nds => nds.map(n => 
-        n.id === nodeId ? { 
-          ...n, 
-          data: { 
-            ...n.data, 
-            execStatus: status,
-            execResult: result || (status === 'success' ? { status: 'OK', timestamp: new Date().toISOString() } : null)
-          } 
-        } : n
-      ));
-    };
-
-    // Execute Trigger
-    setNodeStatus(trigger.id, 'loading');
-    await new Promise(r => setTimeout(r, 1000));
-    setNodeStatus(trigger.id, 'success', { event: 'webhook_received', body: { name: 'Marcos', email: 'marcos@fluxa.io' } });
-
-    // Follow edges
-    let currentNodeId = trigger.id;
-    let hasNext = true;
-
-    while (hasNext) {
-      const edge = edges.find(e => e.source === currentNodeId);
-      if (!edge) {
-        hasNext = false;
-        break;
-      }
-
-      const nextNode = nodes.find(n => n.id === edge.target);
-      // Skip addNodes in execution flow
-      if (!nextNode || nextNode.type === 'addNode') {
-        // If it's an addNode, check if there's something after it
-        const afterAddEdge = edges.find(e => e.source === edge.target);
-        if (afterAddEdge) {
-          currentNodeId = afterAddEdge.source;
-          continue;
-        } else {
-          hasNext = false;
-          break;
-        }
-      }
-
-      setNodeStatus(nextNode.id, 'loading');
-      await new Promise(r => setTimeout(r, 1500));
+    try {
+      setExecutionStatus('RUNNING');
+      // Reset nodes
+      setNodes(nds => nds.map(n => ({ ...n, data: { ...n.data, execStatus: 'IDLE', execResult: null } })));
       
-      // Simulate variable resolution for the UI
-      let resolvedResult: any = { status: 'OK' };
-      const config = nextNode.data.config || {};
-      const hasVariables = Object.values(config).some(v => typeof v === 'string' && v.includes('{{'));
-      
-      if (hasVariables) {
-        resolvedResult.resolvedData = "Variables procesadas: 'Marcos' <marcos@fluxa.io>";
-      }
-
-      setNodeStatus(nextNode.id, 'success', resolvedResult);
-      currentNodeId = nextNode.id;
+      const execution = await executionsService.trigger(workflowId, { trigger: 'manual' });
+      setActiveExecutionId(execution.id);
+    } catch (error) {
+      console.error('Execution error:', error);
+      setExecutionStatus('FAILED');
     }
-
-    setIsExecuting(false);
   };
 
   if (loading) return null;
@@ -305,14 +321,61 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({ projectId }) => {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-[10px] font-bold text-gray-500">
-            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-            Auto-guardado activo
-          </div>
-          
-          {isExecuting ? (
+          {/* Workflow readiness indicator */}
+          {(() => {
+            const CONN_PROVIDERS = ['google', 'microsoft', 'slack', 'discord', 'shopify'];
+            const actionNodes = nodes.filter(n => n.type === 'action' || n.type === 'condition' || n.type === 'delay');
+            const needsConnection = actionNodes.some(n => n.data?.provider && CONN_PROVIDERS.includes(n.data.provider as string) && !isConnected(n.data.provider as any));
+            const needsConfig = actionNodes.some(n => n.data?.provider && !n.data?.actionKey);
+
+            let readinessLabel = '';
+            let readinessColor = '';
+            let readinessDot = '';
+
+            if (!workflowId) {
+              readinessLabel = 'SIN WORKFLOW';
+              readinessColor = 'bg-gray-50 text-gray-400 border-gray-200';
+              readinessDot = 'bg-gray-300';
+            } else if (needsConnection) {
+              readinessLabel = 'SIN CONEXIÓN';
+              readinessColor = 'bg-amber-50 text-amber-600 border-amber-100';
+              readinessDot = 'bg-amber-400';
+            } else if (needsConfig) {
+              readinessLabel = 'SIN CONFIG';
+              readinessColor = 'bg-gray-50 text-gray-500 border-gray-200';
+              readinessDot = 'bg-gray-400';
+            } else {
+              readinessLabel = 'LISTO';
+              readinessColor = 'bg-emerald-50 text-emerald-600 border-emerald-100';
+              readinessDot = 'bg-emerald-500';
+            }
+
+            return executionStatus === 'IDLE' ? (
+              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold border ${readinessColor}`}>
+                <div className={`w-2 h-2 rounded-full ${readinessDot}`} />
+                {readinessLabel}
+              </div>
+            ) : null;
+          })()}
+
+          {executionStatus !== 'IDLE' && (
+            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold border ${
+              executionStatus === 'RUNNING' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
+              executionStatus === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+              'bg-rose-50 text-rose-600 border-rose-100'
+            }`}>
+              <div className={`w-2 h-2 rounded-full ${
+                executionStatus === 'RUNNING' ? 'bg-indigo-500 animate-pulse' :
+                executionStatus === 'COMPLETED' ? 'bg-emerald-500' :
+                'bg-rose-500'
+              }`} />
+              {executionStatus === 'RUNNING' ? 'EJECUTANDO...' : executionStatus === 'COMPLETED' ? 'ÉXITO' : 'FALLO'}
+            </div>
+          )}
+
+          {executionStatus === 'RUNNING' ? (
             <button 
-              onClick={() => setIsExecuting(false)}
+              onClick={() => setExecutionStatus('IDLE')}
               className="px-6 py-2 bg-rose-50 text-rose-600 border border-rose-200 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:bg-rose-100 transition-all shadow-sm"
             >
               <div className="w-2 h-2 bg-rose-500 rounded-full animate-ping" />
@@ -352,7 +415,7 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({ projectId }) => {
             // Navigation improvements
             panOnScroll={true}
             zoomOnScroll={true}
-            panOnDrag={[1, 2, 3, 4]} // 1: left, 2: middle, 3: right (some mice), 4: back
+            panOnDrag={true}
             selectionOnDrag={false}
             elementsSelectable={true}
           >

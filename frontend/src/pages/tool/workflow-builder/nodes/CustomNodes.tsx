@@ -6,9 +6,14 @@ export type NodeData = {
   label: string;
   sublabel?: string;
   icon?: React.ReactNode;
-  execStatus?: 'idle' | 'loading' | 'success' | 'error';
+  provider?: string;
+  actionKey?: string;
+  config?: Record<string, any>;
+  execStatus?: string;
   execResult?: any;
 };
+
+const PROVIDERS_REQUIRING_CONNECTION = ['google', 'microsoft', 'slack', 'discord', 'shopify'];
 
 const nodeBaseStyles = "w-[180px] md:w-[220px] max-w-[240px] bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden transition-all group relative";
 const selectedStyles = "ring-2 ring-indigo-500 ring-offset-2 border-indigo-500";
@@ -18,30 +23,19 @@ const actionButtonStyles = "p-1.5 hover:bg-gray-100 rounded-md text-gray-400 hov
 const handleStyles = "w-3 h-3 bg-white border-2 border-gray-300 hover:border-indigo-500 hover:scale-125 transition-transform z-10";
 
 // --- Execution Status Badge ---
-const ExecutionStatusBadge = ({ status, result }: { status?: 'idle' | 'loading' | 'success' | 'error', result?: any }) => {
-  if (!status || status === 'idle') return null;
+const ExecutionStatusBadge = ({ status, result }: { status?: string, result?: any }) => {
+  if (!status || status === 'IDLE') return null;
 
   const config = {
-    loading: { icon: <Loader2 size={10} className="animate-spin" />, color: 'bg-indigo-50 text-indigo-600 border-indigo-100' },
-    success: { icon: <CheckCircle2 size={10} />, color: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
-    error: { icon: <AlertCircle size={10} />, color: 'bg-rose-50 text-rose-600 border-rose-100' },
-  }[status];
+    RUNNING: { icon: <Loader2 size={10} className="animate-spin" />, color: 'bg-indigo-50 text-indigo-600 border-indigo-100' },
+    COMPLETED: { icon: <CheckCircle2 size={10} />, color: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
+    FAILED: { icon: <AlertCircle size={10} />, color: 'bg-rose-50 text-rose-600 border-rose-100' },
+  }[status as keyof typeof config] || { icon: null, color: 'bg-gray-50 text-gray-400' };
 
   return (
     <div className={`absolute -top-2 -right-2 flex items-center gap-1.5 px-2 py-1 rounded-full border shadow-sm z-[60] animate-in zoom-in-50 duration-300 ${config.color}`}>
       {config.icon}
       <span className="text-[8px] font-black uppercase tracking-widest">{status}</span>
-      {status === 'success' && (
-        <button 
-          onClick={(e) => { 
-            e.stopPropagation(); 
-            alert(`Resultado de Ejecución:\n${JSON.stringify(result, null, 2)}`); 
-          }}
-          className="ml-1 pl-1.5 border-l border-emerald-200 text-[7px] font-bold hover:text-emerald-800 transition-colors"
-        >
-          INSPECCIONAR
-        </button>
-      )}
     </div>
   );
 };
@@ -147,8 +141,20 @@ export const ActionNode = ({ data, selected, id }: NodeProps<Node<NodeData>>) =>
           </button>
         </div>
       </div>
-      <div className="px-3 py-1.5 bg-gray-50/50">
+      <div className="px-3 py-1.5 bg-gray-50/50 flex items-center justify-between gap-2">
         <p className="text-[10px] text-gray-500 font-medium truncate">{data.sublabel || 'Ejecuta una tarea'}</p>
+        {data.provider && PROVIDERS_REQUIRING_CONNECTION.includes(data.provider) && (
+          <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold border shrink-0 bg-amber-50 text-amber-600 border-amber-100">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+            CONN
+          </span>
+        )}
+        {data.provider && !data.actionKey && (
+          <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold border shrink-0 bg-gray-100 text-gray-400 border-gray-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+            SIN CONFIG
+          </span>
+        )}
       </div>
       <Handle type="source" position={Position.Bottom} className={handleStyles} />
     </div>
